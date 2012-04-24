@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.rfxcom.rfxtrx433</groupId>
+	<artifactId>rfxtrx433</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<description>Java library for the RFXtrx433</description>
+
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <name>lisa-n-tom.com-releases</name>
+            <url>https://lisa-n-tom.com/artifactory/libs-releases-local/</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>lisa-n-tom.com-snapshots</name>
+            <url>https://lisa-n-tom.com/artifactory/libs-snapshot-local/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+	<dependencies>
+        <dependency>
+            <groupId>com.housemate</groupId>
+            <artifactId>utils</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.rxtx</groupId>
+            <artifactId>rxtx</artifactId>
+            <version>2.2pre2</version>
+        </dependency>
+    </dependencies>
+
+	<build>
+		<!-- Use Java 1.6 -->
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
