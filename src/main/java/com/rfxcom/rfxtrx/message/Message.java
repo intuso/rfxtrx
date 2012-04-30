@@ -1,4 +1,4 @@
-package com.rfxcom.rfxtrx433.message;
+package com.rfxcom.rfxtrx.message;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -60,5 +60,18 @@ public class Message {
         out.write(new byte[] {packetType, packetSubType, sequenceNumber});
         out.write(packetData);
         out.flush();
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("pt=0x")
+                .append(Integer.toHexString(packetType))
+                .append(", pst=0x")
+                .append(Integer.toHexString(packetSubType))
+                .append(", data=[");
+        for(byte b : packetData)
+            sb.append("0x").append(Integer.toHexString(b)).append(", ");
+        sb.append("]");
+        return sb.toString();
     }
 }

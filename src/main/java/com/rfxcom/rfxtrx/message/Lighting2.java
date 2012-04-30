@@ -1,7 +1,4 @@
-package com.rfxcom.rfxtrx433.message.transceiver;
-
-import com.rfxcom.rfxtrx433.message.Message;
-import com.rfxcom.rfxtrx433.message.MessageWrapper;
+package com.rfxcom.rfxtrx.message;
 
 /**
  * Created by IntelliJ IDEA.
@@ -15,9 +12,9 @@ public class Lighting2 extends MessageWrapper {
     public final static byte PACKET_TYPE = 0x11;
     
     public enum SubType {
-        AC((byte)0),
-        HomeEasyEU((byte)1),
-        ANSLUT((byte)2);
+        AC((byte)0x0),
+        HomeEasyEU((byte)0x1),
+        ANSLUT((byte)0x2);
 
         private byte code;
 
@@ -25,8 +22,11 @@ public class Lighting2 extends MessageWrapper {
             this.code = code;
         }
 
-        private byte getCode() {
-            return code;
+        static SubType valueOf(byte b) {
+            for(SubType type : values())
+                if(type.code == b)
+                    return type;
+            return null;
         }
     }
 
@@ -44,15 +44,18 @@ public class Lighting2 extends MessageWrapper {
             this.code = code;
         }
 
-        private byte getCode() {
-            return code;
+        static Command valueOf(byte b) {
+            for(Command cmd : values())
+                if(cmd.code == b)
+                    return cmd;
+            return null;
         }
     }
 
-    private final static int ID1 = 0, ID2 = 2, ID3 = 3, ID4 = 4, UNITCODE = 5, CMND = 6, LEVEL = 7, RSSI = 9;
+    private final static int ID1 = 0, ID2 = 1, ID3 = 2, ID4 = 3, UNITCODE = 4, CMND = 5, LEVEL = 6, RSSI = 7;
 
     public Lighting2() {
-        super(new Message(PACKET_TYPE, (byte)0x00, new byte[10]));
+        super(new Message(PACKET_TYPE, (byte)0x0, new byte[8]));
     }
 
     public Lighting2(Message message) {
@@ -60,7 +63,7 @@ public class Lighting2 extends MessageWrapper {
     }
     
     public Lighting2(SubType subType, int id, byte unitCode, Command command, byte level) {
-        super(new Message(PACKET_TYPE, subType.getCode(), new byte[10]));
+        super(new Message(PACKET_TYPE, subType.code, new byte[8]));
         setId(id);
         setUnitCode(unitCode);
         setCommand(command);
@@ -68,15 +71,11 @@ public class Lighting2 extends MessageWrapper {
     }
 
     public SubType getSubType() {
-        byte code = message.getPacketSubType();
-        for(SubType subType : SubType.values())
-            if(subType.getCode() == code)
-                return subType;
-        return null;
+        return SubType.valueOf(message.getPacketSubType());
     }
 
     public void setSubType(SubType subType) {
-        message.setPacketSubType(subType.getCode());
+        message.setPacketSubType(subType.code);
     }
     
     public int getId() {
@@ -104,15 +103,11 @@ public class Lighting2 extends MessageWrapper {
     }
 
     public Command getCommand() {
-        byte code = message.getPacketData(CMND);
-        for(Command command : Command.values())
-            if(command.getCode() == code)
-                return command;
-        return null;
+        return Command.valueOf(message.getPacketData(CMND));
     }
 
     public void setCommand(Command command) {
-        message.setPacketData(CMND, command.getCode());
+        message.setPacketData(CMND, command.code);
     }
 
     public byte getLevel() {

@@ -1,4 +1,4 @@
-package com.rfxcom.rfxtrx433.message;
+package com.rfxcom.rfxtrx.message;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,5 +20,10 @@ public abstract class MessageWrapper {
 
     public void writeTo(OutputStream out, byte sequenceNumber) throws IOException {
         message.writeTo(out, sequenceNumber);
+    }
+
+    @Override
+    public String toString() {
+        return message.toString();
     }
 }
