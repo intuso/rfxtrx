@@ -1,5 +1,7 @@
 package com.rfxcom.rfxtrx.message;
 
+import com.rfxcom.rfxtrx.Mode;
+
 /**
  * Created by IntelliJ IDEA.
  * User: tomc
@@ -55,67 +57,6 @@ public class Interface extends MessageWrapper {
         }
     }
 
-    public enum OperationFrequency {
-        F310MHz((byte)0x50),
-        F315MHz((byte)0x51),
-        F43392MHzRec((byte)0x52),
-        F43392MHzTrx((byte)0x53),
-        F86800MHz((byte)0x55),
-        F86800MHzFSK((byte)0x56),
-        F86830MHz((byte)0x57),
-        F86830MHzFSK((byte)0x58),
-        F86835MHz((byte)0x59),
-        F86835MHzFSK((byte)0x5A),
-        F86895MHz((byte)0x5B);
-
-        protected byte code;
-
-        OperationFrequency(byte code) {
-            this.code = code;
-        }
-
-        static OperationFrequency valueOf(byte b) {
-            for(OperationFrequency frequency : values())
-                if(frequency.code == b)
-                    return frequency;
-            return null;
-        }
-    }
-
-    public enum OperationMode {
-        Undecoded(3, 7),
-        RFU1(3, 6),
-        RFU2(3, 5),
-        RFU3(3, 4),
-        RFU4(3, 3),
-        RFU5(3, 2),
-        RFU6(3, 1),
-        RFU7(3, 0),
-        RFU8(2, 7),
-        RFU9(2, 6),
-        ProGuard(4, 5),
-        FS20(4, 4),
-        LaCrosse(4, 3),
-        Hideki(4, 2),
-        AD(4, 1),
-        Mertik(4, 0),
-        Visonic(3, 7),
-        ATI(3, 6),
-        OregonScientific(3, 5),
-        IkeaKoppla(3, 4),
-        HomeEasyEU(3, 3),
-        AC(3, 2),
-        ARC(3, 1),
-        X10(3, 0);
-
-        protected int byteIndex, bitIndex;
-
-        OperationMode(int byteIndex, int bitIndex) {
-            this.byteIndex = byteIndex;
-            this.bitIndex = bitIndex;
-        }
-    }
-
     private final static int CMD = 0, MSG1 = 1;
 
     public Interface() {
@@ -127,16 +68,16 @@ public class Interface extends MessageWrapper {
         message.setPacketData(CMD, command.code);
     }
 
-    public void setFrequency(OperationFrequency frequency) {
-        message.setPacketData(MSG1, frequency.code);
+    public void setFrequency(Mode.OperationFrequency frequency) {
+        message.setPacketData(MSG1, frequency.getCode());
     }
     
-    public void setValue(OperationMode value, boolean set) {
-        byte b = message.getPacketData(value.byteIndex);
+    public void setOperationMode(Mode.OperationMode value, boolean set) {
+        byte b = message.getPacketData(value.getByteIndex());
         if(set)
-            b |= (1 << value.bitIndex);
+            b |= (1 << value.getBitIndex());
         else
-            b &= ~(1 << value.bitIndex);
-        message.setPacketData(value.byteIndex, b);
+            b &= ~(1 << value.getBitIndex());
+        message.setPacketData(value.getByteIndex(), b);
     }
 }
