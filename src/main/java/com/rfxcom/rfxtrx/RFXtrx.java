@@ -1,7 +1,11 @@
 package com.rfxcom.rfxtrx;
 
-import com.housemate.utils.log.Log;
-import com.rfxcom.rfxtrx.message.*;
+import com.intuso.utils.log.Log;
+import com.rfxcom.rfxtrx.message.Interface;
+import com.rfxcom.rfxtrx.message.InterfaceResponse;
+import com.rfxcom.rfxtrx.message.Lighting2;
+import com.rfxcom.rfxtrx.message.Message;
+import com.rfxcom.rfxtrx.message.MessageWrapper;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
