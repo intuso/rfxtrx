@@ -260,4 +260,9 @@ public class RFXtrx {
     public static interface MessageListener {
         public void messageReceived(MessageWrapper messageWrapper);
     }
+
+    public static void main(String[] args) {
+        for(CommPortIdentifier cpi : listSuitablePorts())
+            System.out.println(cpi.getName());
+    }
 }
