@@ -9,6 +9,8 @@ import com.rfxcom.rfxtrx.message.MessageWrapper;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
 import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
@@ -16,6 +18,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TooManyListenersException;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  * Created by IntelliJ IDEA.
@@ -42,8 +46,9 @@ public class RFXtrx {
      * Wrapped input stream for the serial port
      */
     private InputStream in;
-    
-    private Thread readerThread = null;
+
+    private final Reader reader = new Reader();
+    private final Thread readerThread = new Thread(reader);
 
     private List<MessageListener> listeners;
 
@@ -91,7 +96,7 @@ public class RFXtrx {
             this.port.setSerialPortParams(38400, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             in = this.port.getInputStream();
             out = this.port.getOutputStream();
-            readerThread = new Thread(new Reader());
+            port.addEventListener(reader);
             readerThread.start();
             sendMessage(new Interface(Interface.Command.Reset));
             try {
@@ -109,6 +114,10 @@ public class RFXtrx {
             log.e("Couldn't open serial port");
             log.st(e);
             this.port = null;
+        } catch(TooManyListenersException e) {
+            log.e("Couldn't add listener to serial port");
+            log.st(e);
+            this.port = null;
         }
     }
 
@@ -117,13 +126,12 @@ public class RFXtrx {
      */
     public final void closePort() {
 
+        port.removeEventListener();
         readerThread.interrupt();
         try {
             readerThread.join();
         } catch(InterruptedException e) {
-            // do nothing, closing down anyway
         }
-        readerThread = null;
         
         // close the IO streams
         try {
@@ -181,7 +189,25 @@ public class RFXtrx {
         return suitable_ports;
     }
     
-    private class Reader implements Runnable {
+    private class Reader implements Runnable, SerialPortEventListener {
+
+        private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<byte[]>();
+        private final byte[] buffer = new byte[1024];
+
+        @Override
+        public void serialEvent(SerialPortEvent serialPortEvent) {
+            try {
+                int len = in.read(buffer);
+                byte[] read = new byte[len];
+                System.arraycopy(buffer, 0, read, 0, len);
+                readData.addLast(buffer);
+            } catch(IOException e) {
+                log.e("Failed to read data from serial port");
+                log.st(e);
+                closePort();
+            }
+        }
+
         @Override
         public void run() {
             try {
@@ -189,13 +215,7 @@ public class RFXtrx {
                 byte packetType, packetSubType, sequenceNumber;
                 byte[] packetData;
                 outer: while(true) {
-                    try {
-                        waitForAvailableBytes(1);
-                    } catch(InterruptedException e) {
-                        log.e("Interrupted waiting for message to read");
-                        break outer;
-                    }
-                    packetLength = in.read();
+                    packetLength = readBytes(1)[0];
                     if(packetLength < 0) {
                         log.e("Packet length was -ve, stream was closed");
                         break outer;
@@ -204,32 +224,44 @@ public class RFXtrx {
                         break outer;
                     } else
                         log.d("Read packet length as 0x" + Integer.toHexString(packetLength));
-                    packetType = (byte)in.read();
-                    packetSubType = (byte)in.read();
-                    sequenceNumber = (byte)in.read();
-                    packetData = new byte[packetLength - 3];
-                    try {
-                        waitForAvailableBytes(packetData.length);
-                    } catch(InterruptedException e) {
-                        log.e("Interrupted waiting for packet data");
-                        break outer;
-                    }
-                    if(in.read(packetData) != packetData.length) {
-                        log.e("Did not read enough data");
-                        break outer;
-                    }
+                    packetType = readBytes(1)[0];
+                    packetSubType = readBytes(1)[0];
+                    sequenceNumber = readBytes(1)[0];
+                    packetData = readBytes(packetLength - 3);
                     messageReceived(new Message(packetType, packetSubType, packetData), sequenceNumber);
                 }
-            } catch(IOException e) {
+            } catch(InterruptedException e) {
                 log.e("Error reading from stream");
             }
             closePort();
         }
 
-        private void waitForAvailableBytes(int numNeeded) throws IOException, InterruptedException {
-            while(in.available() < numNeeded) {
-                Thread.sleep(1);
+        private byte[] readBytes(int numNeeded) throws InterruptedException {
+
+            // declare result array and how many bytes have been read
+            byte[] result = new byte[numNeeded];
+            int readSoFar = 0;
+
+            // while we need to read more
+            while(readSoFar < numNeeded) {
+                // get the next piece of data
+                byte[] nextReadData = readData.takeFirst();
+
+                // work out how much to copy and copy it
+                int toCopy = Math.max(nextReadData.length, numNeeded - readSoFar);
+                System.arraycopy(nextReadData, 0, readSoFar, readSoFar, toCopy);
+
+                // increment how much we've read
+                readSoFar += toCopy;
+
+                // if we didn't read all from that line, put it back minus the data we already read
+                if(toCopy < nextReadData.length) {
+                    byte[] toPutBack = new byte[nextReadData.length - toCopy];
+                    System.arraycopy(nextReadData, toCopy, toPutBack, 0, toPutBack.length);
+                    readData.addFirst(toPutBack);
+                }
             }
+            return result;
         }
         
         private void messageReceived(Message message, byte sequenceNumber) {
