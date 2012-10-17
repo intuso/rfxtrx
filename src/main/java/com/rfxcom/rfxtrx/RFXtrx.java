@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TooManyListenersException;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -97,6 +98,7 @@ public class RFXtrx {
             in = this.port.getInputStream();
             out = this.port.getOutputStream();
             port.addEventListener(reader);
+            port.notifyOnDataAvailable(true);
             readerThread.start();
             sendMessage(new Interface(Interface.Command.Reset));
             try {
@@ -192,12 +194,15 @@ public class RFXtrx {
     private class Reader implements Runnable, SerialPortEventListener {
 
         private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<byte[]>();
-        private final byte[] buffer = new byte[1024];
+        private byte[] buffer;
 
         @Override
         public void serialEvent(SerialPortEvent serialPortEvent) {
             try {
-                int len = in.read(buffer);
+                int len = in.available();
+                buffer = new byte[len];
+                in.read(buffer);
+                log.d("Read data from socket: " + Arrays.toString(buffer));
                 byte[] read = new byte[len];
                 System.arraycopy(buffer, 0, read, 0, len);
                 readData.addLast(buffer);
@@ -220,7 +225,7 @@ public class RFXtrx {
                         log.e("Packet length was -ve, stream was closed");
                         break outer;
                     } else if(packetLength < 3) {
-                        log.e("Packet length was < 3. Should be at least 3!");
+                        log.e("Packet length was " + packetLength + ". Should be at least 3!");
                         break outer;
                     } else
                         log.d("Read packet length as 0x" + Integer.toHexString(packetLength));
@@ -248,8 +253,8 @@ public class RFXtrx {
                 byte[] nextReadData = readData.takeFirst();
 
                 // work out how much to copy and copy it
-                int toCopy = Math.max(nextReadData.length, numNeeded - readSoFar);
-                System.arraycopy(nextReadData, 0, readSoFar, readSoFar, toCopy);
+                int toCopy = Math.min(nextReadData.length, numNeeded - readSoFar);
+                System.arraycopy(nextReadData, 0, result, readSoFar, toCopy);
 
                 // increment how much we've read
                 readSoFar += toCopy;
