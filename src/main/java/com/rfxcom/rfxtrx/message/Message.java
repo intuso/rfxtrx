@@ -1,5 +1,10 @@
 package com.rfxcom.rfxtrx.message;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.primitives.Bytes;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -14,6 +19,13 @@ public class Message {
     private byte packetType;
     private byte packetSubType;
     private byte[] packetData;
+
+    private Function<Byte, String> byteToHexString = new Function<Byte, String>() {
+        @Override
+        public String apply(Byte b) {
+            return Integer.toHexString(b);
+        }
+    };
 
     public Message() {}
 
@@ -65,13 +77,12 @@ public class Message {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("pt=0x")
-                .append(Integer.toHexString(packetType))
+                .append(byteToHexString.apply(packetType))
                 .append(", pst=0x")
-                .append(Integer.toHexString(packetSubType))
-                .append(", data=[");
-        for(byte b : packetData)
-            sb.append("0x").append(Integer.toHexString(b)).append(", ");
-        sb.append("]");
+                .append(byteToHexString.apply(packetSubType))
+                .append(", data=[")
+                .append(Joiner.on(", ").join(Lists.transform(Bytes.asList(packetData), byteToHexString)))
+                .append("]");
         return sb.toString();
     }
 }

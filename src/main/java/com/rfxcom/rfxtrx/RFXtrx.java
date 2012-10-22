@@ -1,6 +1,8 @@
 package com.rfxcom.rfxtrx;
 
 import com.intuso.utils.log.Log;
+import com.intuso.utils.log.LogLevel;
+import com.intuso.utils.log.writer.StdOutWriter;
 import com.rfxcom.rfxtrx.message.Interface;
 import com.rfxcom.rfxtrx.message.InterfaceResponse;
 import com.rfxcom.rfxtrx.message.Lighting2;
@@ -9,8 +11,6 @@ import com.rfxcom.rfxtrx.message.MessageWrapper;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
 import gnu.io.UnsupportedCommOperationException;
 
 import java.io.IOException;
@@ -19,7 +19,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.TooManyListenersException;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
@@ -48,8 +47,8 @@ public class RFXtrx {
      */
     private InputStream in;
 
-    private final Reader reader = new Reader();
-    private final Thread readerThread = new Thread(reader);
+    private Thread readerThread;
+    private Thread parserThread;
 
     private List<MessageListener> listeners;
 
@@ -97,8 +96,10 @@ public class RFXtrx {
             this.port.setSerialPortParams(38400, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             in = this.port.getInputStream();
             out = this.port.getOutputStream();
-            port.addEventListener(reader);
             port.notifyOnDataAvailable(true);
+            parserThread = new Thread(new Parser());
+            readerThread = new Thread(new Reader());
+            parserThread.start();
             readerThread.start();
             sendMessage(new Interface(Interface.Command.Reset));
             try {
@@ -116,11 +117,11 @@ public class RFXtrx {
             log.e("Couldn't open serial port");
             log.st(e);
             this.port = null;
-        } catch(TooManyListenersException e) {
+        } /*catch(TooManyListenersException e) {
             log.e("Couldn't add listener to serial port");
             log.st(e);
             this.port = null;
-        }
+        }*/
     }
 
     /**
@@ -128,13 +129,6 @@ public class RFXtrx {
      */
     public final void closePort() {
 
-        port.removeEventListener();
-        readerThread.interrupt();
-        try {
-            readerThread.join();
-        } catch(InterruptedException e) {
-        }
-        
         // close the IO streams
         try {
             if(out != null)
@@ -156,15 +150,26 @@ public class RFXtrx {
         port = null;
         in = null;
         out = null;
+
+        parserThread.interrupt();
+        try {
+            parserThread.join();
+        } catch(InterruptedException e) {
+        }
+        readerThread.interrupt();
+        try {
+            readerThread.join();
+        } catch(InterruptedException e) {
+        }
     }
-    
+
     public void sendMessage(MessageWrapper messageWrapper) throws IOException {
         if(out == null)
             throw new IOException("Socket is not open");
         log.d("Sending message: " + messageWrapper.toString());
         messageWrapper.writeTo(out, (byte)0);
     }
-    
+
     private void messageReceived(MessageWrapper messageWrapper) {
         for(MessageListener listener : listeners)
             listener.messageReceived(messageWrapper);
@@ -190,55 +195,63 @@ public class RFXtrx {
 
         return suitable_ports;
     }
-    
-    private class Reader implements Runnable, SerialPortEventListener {
 
-        private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<byte[]>();
-        private byte[] buffer;
+    private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<byte[]>();
 
-        @Override
-        public void serialEvent(SerialPortEvent serialPortEvent) {
-            try {
-                int len = in.available();
-                buffer = new byte[len];
-                in.read(buffer);
-                log.d("Read data from socket: " + Arrays.toString(buffer));
-                byte[] read = new byte[len];
-                System.arraycopy(buffer, 0, read, 0, len);
-                readData.addLast(buffer);
-            } catch(IOException e) {
-                log.e("Failed to read data from serial port");
-                log.st(e);
-                closePort();
-            }
-        }
+    private class Reader implements Runnable {
+
+        private final byte[] buffer = new byte[1024];
+        private int len;
 
         @Override
         public void run() {
-            try {
-                int packetLength;
-                byte packetType, packetSubType, sequenceNumber;
-                byte[] packetData;
-                outer: while(true) {
-                    packetLength = readBytes(1)[0];
-                    if(packetLength < 0) {
-                        log.e("Packet length was -ve, stream was closed");
-                        break outer;
-                    } else if(packetLength < 3) {
-                        log.e("Packet length was " + packetLength + ". Should be at least 3!");
-                        break outer;
-                    } else
-                        log.d("Read packet length as 0x" + Integer.toHexString(packetLength));
-                    packetType = readBytes(1)[0];
-                    packetSubType = readBytes(1)[0];
-                    sequenceNumber = readBytes(1)[0];
-                    packetData = readBytes(packetLength - 3);
-                    messageReceived(new Message(packetType, packetSubType, packetData), sequenceNumber);
+            while(!Thread.currentThread().isInterrupted()) {
+                try {
+                    len = in.read(buffer);
+                    if(len < 0)
+                        break;
+                    byte[] readBytes = new byte[len];
+                    System.arraycopy(buffer, 0, readBytes, 0, len);
+                    log.d("Read data from socket: " + Arrays.toString(readBytes));
+                    readData.addLast(readBytes);
+                } catch(IOException e) {
+                    log.e("Failed to read data from serial port");
+                    log.st(e);
+                    closePort();
                 }
-            } catch(InterruptedException e) {
-                log.e("Error reading from stream");
             }
-            closePort();
+        }
+    }
+
+    private class Parser implements Runnable {
+
+        @Override
+        public void run() {
+            while(!Thread.currentThread().isInterrupted()) {
+                try {
+                    int packetLength;
+                    byte packetType, packetSubType, sequenceNumber;
+                    byte[] packetData;
+                    outer: while(true) {
+                        packetLength = readBytes(1)[0];
+                        if(packetLength < 0) {
+                            log.e("Packet length was -ve, stream was closed");
+                            break outer;
+                        } else if(packetLength < 3) {
+                            log.e("Packet length was " + packetLength + ". Should be at least 3!");
+                            break outer;
+                        } else
+                            log.d("Read packet length as 0x" + Integer.toHexString(packetLength));
+                        packetType = readBytes(1)[0];
+                        packetSubType = readBytes(1)[0];
+                        sequenceNumber = readBytes(1)[0];
+                        packetData = readBytes(packetLength - 3);
+                        messageReceived(new Message(packetType, packetSubType, packetData), sequenceNumber);
+                    }
+                } catch(InterruptedException e) {
+                    log.e("Error reading from stream");
+                }
+            }
         }
 
         private byte[] readBytes(int numNeeded) throws InterruptedException {
@@ -268,7 +281,7 @@ public class RFXtrx {
             }
             return result;
         }
-        
+
         private void messageReceived(Message message, byte sequenceNumber) {
             log.d("Message received: " + message.toString());
             MessageWrapper messageWrapper = null;
@@ -298,8 +311,22 @@ public class RFXtrx {
         public void messageReceived(MessageWrapper messageWrapper);
     }
 
-    public static void main(String[] args) {
-        for(CommPortIdentifier cpi : listSuitablePorts())
+    public static void main(String[] args) throws IOException {
+        List<CommPortIdentifier> cpis = listSuitablePorts();
+        for(CommPortIdentifier cpi : cpis)
             System.out.println(cpi.getName());
+
+        CommPortIdentifier cpi = cpis.get(0);
+
+        Log log = new Log("rfxtrx", new StdOutWriter(LogLevel.DEBUG));
+
+        RFXtrx rfxtrx = new RFXtrx(log);
+        rfxtrx.setPortId(cpi);
+
+        rfxtrx.openPort();
+
+        System.in.read();
+
+        rfxtrx.closePort();
     }
 }
