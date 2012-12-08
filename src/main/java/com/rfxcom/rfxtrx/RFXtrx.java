@@ -96,7 +96,6 @@ public class RFXtrx {
             this.port.setSerialPortParams(38400, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             in = this.port.getInputStream();
             out = this.port.getOutputStream();
-            port.notifyOnDataAvailable(true);
             parserThread = new Thread(new Parser());
             readerThread = new Thread(new Reader());
             parserThread.start();
