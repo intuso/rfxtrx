@@ -178,7 +178,7 @@ public class RFXtrx {
      * Get a list of descriptions of potential serial ports
      * @return a list of descriptions of potential serial ports
      */
-    public static List<CommPortIdentifier> listSuitablePorts() {
+    public static List<CommPortIdentifier> listSuitablePorts(Log log) {
 
         List<CommPortIdentifier> suitable_ports = new ArrayList<CommPortIdentifier>();
 
@@ -188,7 +188,12 @@ public class RFXtrx {
         while(comm_ports.hasMoreElements())
         {
             CommPortIdentifier comm_port_id = comm_ports.nextElement();
-            if(comm_port_id.getPortType() == CommPortIdentifier.PORT_SERIAL && !comm_port_id.isCurrentlyOwned())
+            log.d("Found comm port " + comm_port_id.getName());
+            if(comm_port_id.getPortType() != CommPortIdentifier.PORT_SERIAL)
+                log.d("Comm port is not serial type");
+            else if(comm_port_id.isCurrentlyOwned())
+                log.d("Comm port is already owned");
+            else
                 suitable_ports.add(comm_port_id);
         }
 
@@ -311,13 +316,13 @@ public class RFXtrx {
     }
 
     public static void main(String[] args) throws IOException {
-        List<CommPortIdentifier> cpis = listSuitablePorts();
+        Log log = new Log("rfxtrx", new StdOutWriter(LogLevel.DEBUG));
+
+        List<CommPortIdentifier> cpis = listSuitablePorts(log);
         for(CommPortIdentifier cpi : cpis)
             System.out.println(cpi.getName());
 
         CommPortIdentifier cpi = cpis.get(0);
-
-        Log log = new Log("rfxtrx", new StdOutWriter(LogLevel.DEBUG));
 
         RFXtrx rfxtrx = new RFXtrx(log);
         rfxtrx.setPortId(cpi);
