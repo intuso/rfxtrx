@@ -180,24 +180,24 @@ public class RFXtrx {
      */
     public static List<CommPortIdentifier> listSuitablePorts(Log log) {
 
-        List<CommPortIdentifier> suitable_ports = new ArrayList<CommPortIdentifier>();
+        List<CommPortIdentifier> suitablePorts = new ArrayList<CommPortIdentifier>();
 
         // Get a list of suitable ports;
         @SuppressWarnings("unchecked")
-        java.util.Enumeration<CommPortIdentifier> comm_ports = CommPortIdentifier.getPortIdentifiers();
-        while(comm_ports.hasMoreElements())
+        java.util.Enumeration<CommPortIdentifier> commPorts = CommPortIdentifier.getPortIdentifiers();
+        while(commPorts.hasMoreElements())
         {
-            CommPortIdentifier comm_port_id = comm_ports.nextElement();
-            log.d("Found comm port " + comm_port_id.getName());
-            if(comm_port_id.getPortType() != CommPortIdentifier.PORT_SERIAL)
+            CommPortIdentifier commPortId = commPorts.nextElement();
+            log.d("Found comm port " + commPortId.getName());
+            if(commPortId.getPortType() != CommPortIdentifier.PORT_SERIAL)
                 log.d("Comm port is not serial type");
-            else if(comm_port_id.isCurrentlyOwned())
+            else if(commPortId.isCurrentlyOwned())
                 log.d("Comm port is already owned");
             else
-                suitable_ports.add(comm_port_id);
+                suitablePorts.add(commPortId);
         }
 
-        return suitable_ports;
+        return suitablePorts;
     }
 
     private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<byte[]>();
