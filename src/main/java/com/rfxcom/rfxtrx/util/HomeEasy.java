@@ -27,15 +27,15 @@ public class HomeEasy {
                     byte unitCode = lightingMessageWrapper.getUnitCode();
                     switch(lightingMessageWrapper.getCommand()) {
                         case Off:
-                            for(UnknownApplianceListener listener : unitListeners)
+                            for(UnknownApplianceStateListener listener : unitListeners)
                                 listener.nowOff(id, unitCode);
                             break;
                         case On:
-                            for(UnknownApplianceListener listener : unitListeners)
+                            for(UnknownApplianceStateListener listener : unitListeners)
                                 listener.nowOn(id, unitCode);
                             break;
                         case Level:
-                            for(UnknownApplianceListener listener : unitListeners)
+                            for(UnknownApplianceStateListener listener : unitListeners)
                                 listener.newLevel(id, unitCode, lightingMessageWrapper.getLevel());
                             break;
                     }
@@ -48,7 +48,7 @@ public class HomeEasy {
 
     private Lighting2.SubType subType;
     
-    private List<UnknownApplianceListener> unitListeners = new ArrayList<UnknownApplianceListener>();
+    private List<UnknownApplianceStateListener> unitListeners = new ArrayList<UnknownApplianceStateListener>();
     
     private HomeEasy(RFXtrx agent, Lighting2.SubType subType) {
         this.agent = agent;
@@ -64,11 +64,11 @@ public class HomeEasy {
         return new HomeEasy(agent, Lighting2.SubType.AC);
     }
 
-    public void addUnknownApplianceListener(UnknownApplianceListener listener) {
+    public void addUnknownApplianceListener(UnknownApplianceStateListener listener) {
         unitListeners.add(listener);
     }
 
-    public void removeUnknownApplianceListener(UnknownApplianceListener listener) {
+    public void removeUnknownApplianceListener(UnknownApplianceStateListener listener) {
         unitListeners.remove(listener);
     }
 
@@ -112,17 +112,17 @@ public class HomeEasy {
         boolean on = false;
         byte level = 0;
         
-        private List<KnownApplianceListener> listeners = new ArrayList<KnownApplianceListener>();
+        private List<KnownApplianceStateListener> listeners = new ArrayList<KnownApplianceStateListener>();
         
         private Appliance(int i, byte u) {
             this.id = i;
             this.unitCode = u;
-            HomeEasy.this.addUnknownApplianceListener(new UnknownApplianceListener() {
+            HomeEasy.this.addUnknownApplianceListener(new UnknownApplianceStateListener() {
                 @Override
                 public void nowOff(int i, byte u) {
                     if(id == i && unitCode == u) {
                         on = false;
-                        for(KnownApplianceListener listener : listeners)
+                        for(KnownApplianceStateListener listener : listeners)
                             listener.nowOff(Appliance.this);
                     }
                 }
@@ -131,7 +131,7 @@ public class HomeEasy {
                 public void nowOn(int i, byte u) {
                     if(id == i && unitCode == u) {
                         on = true;
-                        for(KnownApplianceListener listener : listeners)
+                        for(KnownApplianceStateListener listener : listeners)
                             listener.nowOn(Appliance.this);
                     }
                 }
@@ -143,11 +143,11 @@ public class HomeEasy {
             });
         }
 
-        public void addListener(KnownApplianceListener listener) {
+        public void addListener(KnownApplianceStateListener listener) {
             listeners.add(listener);
         }
 
-        public void removeListener(KnownApplianceListener listener) {
+        public void removeListener(KnownApplianceStateListener listener) {
             listeners.remove(listener);
         }
 
@@ -180,13 +180,13 @@ public class HomeEasy {
         }
     }
 
-    public static interface UnknownApplianceListener {
+    public static interface UnknownApplianceStateListener {
         void nowOff(int id, byte unitCode);
         void nowOn(int id, byte unitCode);
         void newLevel(int id, byte unitCode, byte level);
     }
 
-    public static interface KnownApplianceListener {
+    public static interface KnownApplianceStateListener {
         void nowOff(Appliance unit);
         void nowOn(Appliance unit);
     }

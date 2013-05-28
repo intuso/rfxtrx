@@ -1,8 +1,8 @@
 package com.rfxcom.rfxtrx;
 
-import com.intuso.utils.log.Log;
-import com.intuso.utils.log.LogLevel;
-import com.intuso.utils.log.writer.StdOutWriter;
+import com.intuso.utilities.log.Log;
+import com.intuso.utilities.log.LogLevel;
+import com.intuso.utilities.log.writer.StdOutWriter;
 import com.rfxcom.rfxtrx.message.Interface;
 import com.rfxcom.rfxtrx.message.InterfaceResponse;
 import com.rfxcom.rfxtrx.message.Lighting2;
