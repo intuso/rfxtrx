@@ -45,7 +45,7 @@
 
     <scm>
         <connection>scm:svn:svn+ssh://tom@intuso.com/svn/intuso.com/RFXtrx433JavaLib/trunk</connection>
-        <developerConnection>scm:svn:https://intuso.com/svn/RFXtrx433JavaLib/trunk/</developerConnection>
+        <developerConnection>scm:svn:svn+ssh://tom@intuso.com/svn/intuso.com/RFXtrx433JavaLib/trunk</developerConnection>
     </scm>
 
     <!--distributionManagement>
