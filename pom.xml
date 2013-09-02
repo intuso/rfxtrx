@@ -7,10 +7,10 @@
 	<description>Java library for the RFXtrx433</description>
 
     <properties>
-        <intuso.utils.version>1.0.0-SNAPSHOT</intuso.utils.version>
+        <intuso.utils.version>1.0.0</intuso.utils.version>
     </properties>
 
-	<dependencies>
+    <dependencies>
         <dependency>
             <groupId>com.intuso.utilities</groupId>
             <artifactId>log</artifactId>
@@ -48,16 +48,16 @@
         <developerConnection>scm:svn:svn+ssh://tom@dev.intuso.com/svn/intuso.com/RFXtrx433JavaLib/trunk</developerConnection>
     </scm>
 
-    <!--distributionManagement>
+    <distributionManagement>
         <repository>
-            <id>central</id>
-            <name>lisa-n-tom.com-releases</name>
-            <url>https://lisa-n-tom.com/artifactory/libs-releases-local/</url>
+            <id>intuso-maven</id>
+            <name>intuso-maven-releases</name>
+            <url>http://dev.intuso.com/maven/content/repositories/releases/</url>
         </repository>
         <snapshotRepository>
-            <id>snapshots</id>
-            <name>lisa-n-tom.com-snapshots</name>
-            <url>https://lisa-n-tom.com/artifactory/libs-snapshot-local/</url>
+            <id>intuso-maven</id>
+            <name>intuso-maven-snapshots</name>
+            <url>http://dev.intuso.com/maven/content/repositories/snapshots/</url>
         </snapshotRepository>
-    </distributionManagement-->
+    </distributionManagement>
 </project>
