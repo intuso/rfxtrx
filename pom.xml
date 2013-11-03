@@ -9,7 +9,7 @@
         <intuso.utils.version>1.0.0</intuso.utils.version>
     </properties>
 
-    <dependencies>
+	<dependencies>
         <dependency>
             <groupId>com.intuso.utilities</groupId>
             <artifactId>log</artifactId>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>13.0.1</version>
+            <version>15.0</version>
         </dependency>
     </dependencies>
 
@@ -49,13 +49,13 @@
 
     <distributionManagement>
         <repository>
-            <id>intuso-maven</id>
-            <name>intuso-maven-releases</name>
+            <id>dev.intuso.com</id>
+            <name>libs-releases</name>
             <url>http://dev.intuso.com/maven/content/repositories/releases/</url>
         </repository>
         <snapshotRepository>
-            <id>intuso-maven</id>
-            <name>intuso-maven-snapshots</name>
+            <id>dev.intuso.com-snapshots</id>
+            <name>libs-snapshots</name>
             <url>http://dev.intuso.com/maven/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
