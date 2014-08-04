@@ -3,11 +3,7 @@ package com.rfxcom.rfxtrx;
 import com.intuso.utilities.log.Log;
 import com.intuso.utilities.log.LogLevel;
 import com.intuso.utilities.log.writer.StdOutWriter;
-import com.rfxcom.rfxtrx.message.Interface;
-import com.rfxcom.rfxtrx.message.InterfaceResponse;
-import com.rfxcom.rfxtrx.message.Lighting2;
-import com.rfxcom.rfxtrx.message.Message;
-import com.rfxcom.rfxtrx.message.MessageWrapper;
+import com.rfxcom.rfxtrx.message.*;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
@@ -220,6 +216,7 @@ public class RFXtrx {
                 } catch(IOException e) {
                     log.e("Failed to read data from serial port", e);
                     closePort();
+                    openPort();
                 }
             }
         }
