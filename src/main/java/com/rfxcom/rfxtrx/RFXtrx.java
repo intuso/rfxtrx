@@ -113,8 +113,7 @@ public class RFXtrx {
             log.e("Couldn't set serial port parameters");
             this.port = null;
         } catch (IOException e) {
-            log.e("Couldn't open serial port");
-            log.st(e);
+            log.e("Couldn't open serial port", e);
             this.port = null;
         } /*catch(TooManyListenersException e) {
             log.e("Couldn't add listener to serial port");
@@ -219,8 +218,7 @@ public class RFXtrx {
                     log.d("Read data from socket: " + Arrays.toString(readBytes));
                     readData.addLast(readBytes);
                 } catch(IOException e) {
-                    log.e("Failed to read data from serial port");
-                    log.st(e);
+                    log.e("Failed to read data from serial port", e);
                     closePort();
                 }
             }
@@ -316,7 +314,7 @@ public class RFXtrx {
     }
 
     public static void main(String[] args) throws IOException {
-        Log log = new Log("rfxtrx", new StdOutWriter(LogLevel.DEBUG));
+        Log log = new Log(new StdOutWriter(LogLevel.DEBUG));
 
         List<CommPortIdentifier> cpis = listSuitablePorts(log);
         for(CommPortIdentifier cpi : cpis)
