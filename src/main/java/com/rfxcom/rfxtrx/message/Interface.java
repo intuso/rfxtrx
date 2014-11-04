@@ -1,7 +1,5 @@
 package com.rfxcom.rfxtrx.message;
 
-import com.rfxcom.rfxtrx.Mode;
-
 /**
  * Created by IntelliJ IDEA.
  * User: tomc
@@ -68,11 +66,11 @@ public class Interface extends MessageWrapper {
         message.setPacketData(CMD, command.code);
     }
 
-    public void setFrequency(Mode.OperationFrequency frequency) {
+    public void setFrequency(OperationFrequency frequency) {
         message.setPacketData(MSG1, frequency.getCode());
     }
     
-    public void setOperationMode(Mode.OperationMode value, boolean set) {
+    public void setOperationMode(OperationMode value, boolean set) {
         byte b = message.getPacketData(value.getByteIndex());
         if(set)
             b |= (1 << value.getBitIndex());

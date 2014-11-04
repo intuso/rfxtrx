@@ -1,21 +1,20 @@
 package com.rfxcom.rfxtrx;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intuso.utilities.log.Log;
 import com.intuso.utilities.log.LogLevel;
 import com.intuso.utilities.log.writer.StdOutWriter;
 import com.rfxcom.rfxtrx.message.*;
-import gnu.io.CommPortIdentifier;
-import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
-import gnu.io.UnsupportedCommOperationException;
+import jssc.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,41 +25,20 @@ import java.util.concurrent.LinkedBlockingDeque;
  */
 public class RFXtrx {
 
-    private CommPortIdentifier portId;
+    private final Log log;
+    private final List<Pattern> patterns;
+    private final List<MessageListener> listeners = Lists.newArrayList();
+    private final EventListener eventListener = new EventListener();
+    private final OutputStream out = new OutputStreamWrapper();
+    private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<byte[]>();
+    private final Thread parserThread = new Thread(new Parser());
 
-    /**
-     * The serial port connection to the relay card
-     */
     private SerialPort port;
 
-    /**
-     * Output stream for the serial port
-     */
-    private OutputStream out;
-
-    /**
-     * Wrapped input stream for the serial port
-     */
-    private InputStream in;
-
-    private Thread readerThread;
-    private Thread parserThread;
-
-    private List<MessageListener> listeners;
-
-    /**
-     * log to use
-     */
-    private final Log log;
-
-    public RFXtrx(Log log) {
+    public RFXtrx(Log log, List<Pattern> patterns) {
         this.log = log;
-        listeners = new ArrayList<MessageListener>();
-    }
-
-    public RFXtrx(CommPortIdentifier portId, Log log) {
-        this(log);
-        setPortId(portId);
+        this.patterns = patterns;
+        parserThread.start();
     }
 
     public void addListener(MessageListener listener) {
@@ -71,97 +49,94 @@ public class RFXtrx {
         listeners.remove(listener);
     }
 
-    public void setPortId(CommPortIdentifier portId) {
-        this.portId = portId;
+    public final synchronized void openPort() throws IOException {
+        outer: for(Pattern pattern : patterns) {
+            log.d("Looking for comm ports matching " + pattern);
+            Set<String> pns = Sets.newHashSet(SerialPortList.getPortNames(pattern));
+            if (pns.size() > 0) {
+                log.d("Found comm ports " + Joiner.on(",").join(pns));
+                for(String pn : pns) {
+                    log.d("Trying " + pn);
+                    try {
+                        openPort(pn);
+                        break outer;
+                    } catch(Throwable t) {
+                        log.w("Failed to open " + pn);
+                    }
+                }
+            }
+        }
+    }
+
+    private void openPort(String portName) throws IOException {
+        try {
+            if (portName == null)
+                throw new IOException("No port name set");
+
+            log.d("Attempting to open serial port " + portName);
+            port = new SerialPort(portName);
+            port.openPort();
+            port.setParams(SerialPort.BAUDRATE_38400, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            port.addEventListener(eventListener, SerialPort.MASK_RXCHAR);
+            sendMessage(new Interface(Interface.Command.Reset));
+            try {
+                Thread.sleep(100); // min 50ms, max 9 seconds
+            } catch (InterruptedException e) {}
+            port.readBytes(port.getOutputBufferBytesCount());
+            sendMessage(new Interface(Interface.Command.GetStatus));
+            log.d("Successfully opened serial port");
+        } catch (SerialPortException e) {
+            throw new IOException(e);
+        }
     }
 
     /**
      * Open a serial port
      */
-    public final void openPort() {
-
-        if(portId == null)
-            return;
-
+    public final synchronized void openPortSafe() {
         // Open the port
         try {
-            log.d("Attempting to open serial port " + portId.getName());
-            this.port = (SerialPort)portId.open(RFXtrx.class.getName(), 38400);
-            port.setInputBufferSize(0);
-            port.setOutputBufferSize(0);
-            this.port.setSerialPortParams(38400, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-            in = this.port.getInputStream();
-            out = this.port.getOutputStream();
-            parserThread = new Thread(new Parser());
-            readerThread = new Thread(new Reader());
-            parserThread.start();
-            readerThread.start();
-            sendMessage(new Interface(Interface.Command.Reset));
-            try {
-                Thread.sleep(100); // min 50ms, max 9 seconds
-            } catch(InterruptedException e) {}
-            sendMessage(new Interface(Interface.Command.GetStatus));
-            log.d("Successfully opened serial port");
-        } catch (PortInUseException e) {
-            log.e("Serial port is already in use. Is the service already running elsewhere?");
-            this.port = null;
-        } catch (UnsupportedCommOperationException e) {
-            log.e("Couldn't set serial port parameters");
-            this.port = null;
+            openPort();
         } catch (IOException e) {
             log.e("Couldn't open serial port", e);
             this.port = null;
-        } /*catch(TooManyListenersException e) {
-            log.e("Couldn't add listener to serial port");
-            log.st(e);
-            this.port = null;
-        }*/
+        }
     }
 
     /**
      * Close the relay port
      */
-    public final void closePort() {
+    public final synchronized void closePort() {
 
-        // close the IO streams
-        try {
-            if(out != null)
-                out.close();
-        } catch (IOException e) {
-            // do nothing, closing down anyway
-        }
-        try {
-            if(in != null)
-                in.close();
-        } catch (IOException e) {
-            // do nothing, closing down anyway
+        if(port != null) {
+            try {
+                port.removeEventListener();
+            } catch (SerialPortException e) {
+                // do nothing, closing down anyway
+            }
+            try {
+                port.closePort();
+            } catch (SerialPortException e) {
+                // do nothing, closing down anyway
+            }
+            port = null;
         }
 
-        // close the port
-        if(port != null)
-            port.close();
-
-        port = null;
-        in = null;
-        out = null;
-
-        parserThread.interrupt();
-        try {
-            parserThread.join();
-        } catch(InterruptedException e) {
-        }
-        readerThread.interrupt();
-        try {
-            readerThread.join();
-        } catch(InterruptedException e) {
-        }
+        readData.clear();
     }
 
-    public void sendMessage(MessageWrapper messageWrapper) throws IOException {
-        if(out == null)
-            throw new IOException("Socket is not open");
+    public synchronized void sendMessage(MessageWrapper messageWrapper) throws IOException {
         log.d("Sending message: " + messageWrapper.toString());
-        messageWrapper.writeTo(out, (byte)0);
+        try {
+            messageWrapper.writeTo(out, (byte) 0);
+        } catch(IOException e) {
+            log.w("Failed to write to socket, attempting close, open and re-write before failing");
+            closePort();
+            openPortSafe();
+            if(port == null)
+                throw new IOException("Socket is not open");
+            messageWrapper.writeTo(out, (byte) 0);
+        }
     }
 
     private void messageReceived(MessageWrapper messageWrapper) {
@@ -169,55 +144,27 @@ public class RFXtrx {
             listener.messageReceived(messageWrapper);
     }
 
-    /**
-     * Get a list of descriptions of potential serial ports
-     * @return a list of descriptions of potential serial ports
-     */
-    public static List<CommPortIdentifier> listSuitablePorts(Log log) {
-
-        List<CommPortIdentifier> suitablePorts = new ArrayList<CommPortIdentifier>();
-
-        // Get a list of suitable ports;
-        @SuppressWarnings("unchecked")
-        java.util.Enumeration<CommPortIdentifier> commPorts = CommPortIdentifier.getPortIdentifiers();
-        while(commPorts.hasMoreElements())
-        {
-            CommPortIdentifier commPortId = commPorts.nextElement();
-            log.d("Found comm port " + commPortId.getName());
-            if(commPortId.getPortType() != CommPortIdentifier.PORT_SERIAL)
-                log.d("Comm port is not serial type");
-            else if(commPortId.isCurrentlyOwned())
-                log.d("Comm port is already owned");
-            else
-                suitablePorts.add(commPortId);
+    private class EventListener implements SerialPortEventListener {
+        @Override
+        public void serialEvent(SerialPortEvent serialPortEvent) {
+            int available;
+            try {
+                while((available = port.getInputBufferBytesCount()) > 0)
+                    readData.add(port.readBytes(available));
+            } catch(SerialPortException e) {
+                log.e("Failed to read data from serial port", e);
+            }
         }
-
-        return suitablePorts;
     }
 
-    private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<byte[]>();
-
-    private class Reader implements Runnable {
-
-        private final byte[] buffer = new byte[1024];
-        private int len;
-
+    private class OutputStreamWrapper extends OutputStream {
         @Override
-        public void run() {
-            while(!Thread.currentThread().isInterrupted()) {
-                try {
-                    len = in.read(buffer);
-                    if(len < 0)
-                        break;
-                    byte[] readBytes = new byte[len];
-                    System.arraycopy(buffer, 0, readBytes, 0, len);
-                    log.d("Read data from socket: " + Arrays.toString(readBytes));
-                    readData.addLast(readBytes);
-                } catch(IOException e) {
-                    log.e("Failed to read data from serial port", e);
-                    closePort();
-                    openPort();
-                }
+        public void write(int oneByte) throws IOException {
+            try {
+                if(port == null || !port.writeByte((byte) oneByte))
+                    throw new IOException("Could not write data to serial port");
+            } catch (SerialPortException e) {
+                throw new IOException(e);
             }
         }
     }
@@ -226,17 +173,18 @@ public class RFXtrx {
 
         @Override
         public void run() {
-            while(!Thread.currentThread().isInterrupted()) {
-                try {
+            try {
+                while(!Thread.currentThread().isInterrupted()) {
                     int packetLength;
                     byte packetType, packetSubType, sequenceNumber;
                     byte[] packetData;
-                    outer: while(true) {
+                    outer:
+                    while (true) {
                         packetLength = readBytes(1)[0];
-                        if(packetLength < 0) {
+                        if (packetLength < 0) {
                             log.e("Packet length was -ve, stream was closed");
                             break outer;
-                        } else if(packetLength < 3) {
+                        } else if (packetLength < 3) {
                             log.e("Packet length was " + packetLength + ". Should be at least 3!");
                             break outer;
                         } else
@@ -247,9 +195,9 @@ public class RFXtrx {
                         packetData = readBytes(packetLength - 3);
                         messageReceived(new Message(packetType, packetSubType, packetData), sequenceNumber);
                     }
-                } catch(InterruptedException e) {
-                    log.e("Error reading from stream");
                 }
+            } catch(InterruptedException e) {
+                log.e("Error reading from stream");
             }
         }
 
@@ -291,6 +239,12 @@ public class RFXtrx {
                 case(Lighting2.PACKET_TYPE) :
                     messageWrapper = new Lighting2(message);
                     break;
+                case(Lighting1.PACKET_TYPE) :
+                    messageWrapper = new Lighting1(message);
+                    break;
+                case(Undecoded.PACKET_TYPE) :
+                    messageWrapper = new Undecoded(message);
+                    break;
                 default:
                     log.d("Unknown packet type");
             }
@@ -299,33 +253,10 @@ public class RFXtrx {
         }
     }
 
-    /**
-     * Created by IntelliJ IDEA.
-     * User: tomc
-     * Date: 24/04/12
-     * Time: 18:34
-     * To change this template use File | Settings | File Templates.
-     */
-    public static interface MessageListener {
-        public void messageReceived(MessageWrapper messageWrapper);
-    }
-
     public static void main(String[] args) throws IOException {
-        Log log = new Log(new StdOutWriter(LogLevel.DEBUG));
-
-        List<CommPortIdentifier> cpis = listSuitablePorts(log);
-        for(CommPortIdentifier cpi : cpis)
-            System.out.println(cpi.getName());
-
-        CommPortIdentifier cpi = cpis.get(0);
-
-        RFXtrx rfxtrx = new RFXtrx(log);
-        rfxtrx.setPortId(cpi);
-
-        rfxtrx.openPort();
-
+        RFXtrx rfxtrx = new RFXtrx(new Log(new StdOutWriter(LogLevel.DEBUG)), Lists.newArrayList(Pattern.compile(".*ttyUSB.*")));
+        rfxtrx.openPortSafe();
         System.in.read();
-
         rfxtrx.closePort();
     }
 }

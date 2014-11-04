@@ -1,7 +1,5 @@
 package com.rfxcom.rfxtrx.message;
 
-import com.rfxcom.rfxtrx.Mode;
-
 /**
  * Created by IntelliJ IDEA.
  * User: tomc
@@ -23,15 +21,15 @@ public class InterfaceResponse extends MessageWrapper {
         return Interface.Command.valueOf(message.getPacketData(CMD));
     }
 
-    public Mode.OperationFrequency getFrequency() {
-        return Mode.OperationFrequency.valueOf(message.getPacketData(MSG1));
+    public OperationFrequency getFrequency() {
+        return OperationFrequency.valueOf(message.getPacketData(MSG1));
     }
 
     public byte getFirmwareVersion() {
         return message.getPacketData(MSG2);
     }
     
-    public boolean isOperationModeSet(Mode.OperationMode value) {
+    public boolean isOperationModeSet(OperationMode value) {
         return (message.getPacketData(value.getByteIndex()) & (1 << value.getBitIndex())) > 0;
     }
 }

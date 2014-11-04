@@ -31,12 +31,13 @@ public class Lighting2 extends MessageWrapper {
     }
 
     public enum Command {
-        Off((byte)0),
+
         On((byte)1),
+        OnAll((byte)4),
+        Off((byte)0),
+        OffAll((byte)3),
         Level((byte)2),
-        GroupOff((byte)3),
-        GroupOn((byte)4),
-        GroupLevel((byte)5);
+        LevelAll((byte)5);
 
         private byte code;
 
@@ -52,7 +53,7 @@ public class Lighting2 extends MessageWrapper {
         }
     }
 
-    private final static int ID1 = 0, ID2 = 1, ID3 = 2, ID4 = 3, UNITCODE = 4, CMND = 5, LEVEL = 6, RSSI = 7;
+    private final static int HOUSE_ID1 = 0, HOUSE_ID2 = 1, HOUSE_ID3 = 2, HOUSE_ID4 = 3, UNITCODE = 4, CMND = 5, LEVEL = 6, RSSI = 7;
 
     public Lighting2() {
         super(new Message(PACKET_TYPE, (byte)0x0, new byte[8]));
@@ -64,7 +65,7 @@ public class Lighting2 extends MessageWrapper {
     
     public Lighting2(SubType subType, int id, byte unitCode, Command command, byte level) {
         super(new Message(PACKET_TYPE, subType.code, new byte[8]));
-        setId(id);
+        setHouseId(id);
         setUnitCode(unitCode);
         setCommand(command);
         setLevel(level);
@@ -78,20 +79,20 @@ public class Lighting2 extends MessageWrapper {
         message.setPacketSubType(subType.code);
     }
     
-    public int getId() {
+    public int getHouseId() {
         // NB id1 is left-hand most 2 bits of the byte
-        return (message.getPacketData(ID1) << 30) +
-                (message.getPacketData(ID2) << 16) +
-                (message.getPacketData(ID3) << 8) +
-                message.getPacketData(ID4);
+        return (message.getPacketData(HOUSE_ID1) << 30) +
+                (message.getPacketData(HOUSE_ID2) << 16) +
+                (message.getPacketData(HOUSE_ID3) << 8) +
+                message.getPacketData(HOUSE_ID4);
     }
     
-    public void setId(int id) {
+    public void setHouseId(int houseIid) {
         // NB id1 is left-hand most 2 bits of the byte
-        message.setPacketData(ID1, (byte) (id >> 30));
-        message.setPacketData(ID2, (byte) (id >> 16));
-        message.setPacketData(ID3, (byte) (id >> 8));
-        message.setPacketData(ID4, (byte) (id));
+        message.setPacketData(HOUSE_ID1, (byte) (houseIid >> 30));
+        message.setPacketData(HOUSE_ID2, (byte) (houseIid >> 16));
+        message.setPacketData(HOUSE_ID3, (byte) (houseIid >> 8));
+        message.setPacketData(HOUSE_ID4, (byte) (houseIid));
     }
 
     public byte getUnitCode() {
