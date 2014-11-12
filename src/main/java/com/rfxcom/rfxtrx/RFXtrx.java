@@ -66,6 +66,8 @@ public class RFXtrx {
                 }
             }
         }
+        if(port == null)
+            throw new IOException("No ports available");
     }
 
     private void openPort(String portName) throws IOException {
@@ -256,6 +258,9 @@ public class RFXtrx {
     public static void main(String[] args) throws IOException {
         RFXtrx rfxtrx = new RFXtrx(new Log(new StdOutWriter(LogLevel.DEBUG)), Lists.newArrayList(Pattern.compile(".*ttyUSB.*")));
         rfxtrx.openPortSafe();
+        rfxtrx.sendMessage(new Interface(Interface.Command.EnableAllModes));
+        rfxtrx.sendMessage(new Interface(Interface.Command.EnableUndecoded));
+        rfxtrx.sendMessage(new Interface(Interface.Command.GetStatus));
         System.in.read();
         rfxtrx.closePort();
     }

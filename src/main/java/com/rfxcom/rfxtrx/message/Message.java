@@ -23,7 +23,11 @@ public class Message {
     private Function<Byte, String> byteToHexString = new Function<Byte, String>() {
         @Override
         public String apply(Byte b) {
-            return Integer.toHexString(b);
+            int first = (b >> 4) & 0x0f;
+            int second = b & 0x0f;
+            char firstChar = (char)(first > 9 ? 'a' + first - 10 : '0' + first);
+            char secondChar = (char)(second > 9 ? 'a' + (second) - 10 : '0' + second);
+            return new String(new char[]{'0', 'x', firstChar, secondChar});
         }
     };
 
@@ -76,12 +80,12 @@ public class Message {
     
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("pt=0x")
+        StringBuilder sb = new StringBuilder("pt=")
                 .append(byteToHexString.apply(packetType))
-                .append(", pst=0x")
+                .append(", pst=")
                 .append(byteToHexString.apply(packetSubType))
                 .append(", data=[")
-                .append(Joiner.on(", ").join(Lists.transform(Bytes.asList(packetData), byteToHexString)))
+                .append(Joiner.on(",").join(Lists.transform(Bytes.asList(packetData), byteToHexString)))
                 .append("]");
         return sb.toString();
     }
