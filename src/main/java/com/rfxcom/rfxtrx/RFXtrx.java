@@ -64,7 +64,8 @@ public class RFXtrx {
                         log.w("Failed to open " + pn);
                     }
                 }
-            }
+            } else
+                throw new IOException("No ports match then pattern " + pattern);
         }
         if(port == null)
             throw new IOException("No ports available");
@@ -113,12 +114,12 @@ public class RFXtrx {
         if(port != null) {
             try {
                 port.removeEventListener();
-            } catch (SerialPortException e) {
+            } catch (Throwable t) {
                 // do nothing, closing down anyway
             }
             try {
                 port.closePort();
-            } catch (SerialPortException e) {
+            } catch (Throwable t) {
                 // do nothing, closing down anyway
             }
             port = null;
