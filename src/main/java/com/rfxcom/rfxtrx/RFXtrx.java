@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.regex.Pattern;
 
@@ -32,6 +34,7 @@ public class RFXtrx {
     private final OutputStream out = new OutputStreamWrapper();
     private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<byte[]>();
     private final Thread parserThread = new Thread(new Parser());
+    private final Timer heartbeatTimer = new Timer("heartbeatTimer", true);
 
     private SerialPort port;
 
@@ -39,6 +42,7 @@ public class RFXtrx {
         this.log = log;
         this.patterns = patterns;
         parserThread.start();
+        heartbeatTimer.schedule(new Heartbeat(), 600000L, 600000L); // every 10 minutes, 10 * 60 * 1000 = 600000
     }
 
     public void addListener(MessageListener listener) {
@@ -58,7 +62,7 @@ public class RFXtrx {
                 for(String pn : pns) {
                     log.d("Trying " + pn);
                     try {
-                        openPort(pn);
+                        port = openPort(pn);
                         break outer;
                     } catch(Throwable t) {
                         log.w("Failed to open " + pn);
@@ -71,13 +75,13 @@ public class RFXtrx {
             throw new IOException("No ports available");
     }
 
-    private void openPort(String portName) throws IOException {
+    private SerialPort openPort(String portName) throws IOException {
         try {
             if (portName == null)
                 throw new IOException("No port name set");
 
             log.d("Attempting to open serial port " + portName);
-            port = new SerialPort(portName);
+            SerialPort port = new SerialPort(portName);
             port.openPort();
             port.setParams(SerialPort.BAUDRATE_38400, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             port.addEventListener(eventListener, SerialPort.MASK_RXCHAR);
@@ -88,6 +92,7 @@ public class RFXtrx {
             port.readBytes(port.getOutputBufferBytesCount());
             sendMessage(new Interface(Interface.Command.GetStatus));
             log.d("Successfully opened serial port");
+            return port;
         } catch (SerialPortException e) {
             throw new IOException(e);
         }
@@ -253,6 +258,20 @@ public class RFXtrx {
             }
             if(messageWrapper != null)
                 RFXtrx.this.messageReceived(messageWrapper);
+        }
+    }
+
+    private class Heartbeat extends TimerTask {
+
+        @Override
+        public void run() {
+            if(port != null) {
+                try {
+                    sendMessage(new Interface(Interface.Command.GetStatus));
+                } catch (IOException e) {
+                    log.w("Failed to get status for heartbeat", e);
+                }
+            }
         }
     }
 
