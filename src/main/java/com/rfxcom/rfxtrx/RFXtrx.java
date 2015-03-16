@@ -62,7 +62,7 @@ public class RFXtrx {
                 for(String pn : pns) {
                     log.d("Trying " + pn);
                     try {
-                        port = openPort(pn);
+                        openPort(pn);
                         break outer;
                     } catch(Throwable t) {
                         log.w("Failed to open " + pn);
@@ -75,13 +75,13 @@ public class RFXtrx {
             throw new IOException("No ports available");
     }
 
-    private SerialPort openPort(String portName) throws IOException {
+    private synchronized void openPort(String portName) throws IOException {
         try {
             if (portName == null)
                 throw new IOException("No port name set");
 
             log.d("Attempting to open serial port " + portName);
-            SerialPort port = new SerialPort(portName);
+            port = new SerialPort(portName);
             port.openPort();
             port.setParams(SerialPort.BAUDRATE_38400, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             port.addEventListener(eventListener, SerialPort.MASK_RXCHAR);
@@ -92,7 +92,6 @@ public class RFXtrx {
             port.readBytes(port.getOutputBufferBytesCount());
             sendMessage(new Interface(Interface.Command.GetStatus));
             log.d("Successfully opened serial port");
-            return port;
         } catch (SerialPortException e) {
             throw new IOException(e);
         }
@@ -138,7 +137,7 @@ public class RFXtrx {
         try {
             messageWrapper.writeTo(out, (byte) 0);
         } catch(IOException e) {
-            log.w("Failed to write to socket, attempting close, open and re-write before failing");
+            log.w("Failed to write to socket, attempting close, open and re-write before failing", e);
             closePort();
             openPortSafe();
             if(port == null)
