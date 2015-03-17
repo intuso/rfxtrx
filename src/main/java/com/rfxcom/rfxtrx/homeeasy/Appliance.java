@@ -1,10 +1,11 @@
 package com.rfxcom.rfxtrx.homeeasy;
 
+import com.google.common.collect.Lists;
+import com.intuso.utilities.listener.Listener;
 import com.intuso.utilities.listener.ListenerRegistration;
+import com.intuso.utilities.listener.Listeners;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
 * Created by tomc on 04/11/14.
@@ -13,7 +14,7 @@ public class Appliance {
 
     protected final House house;
     protected final byte unitCode;
-    protected final List<Callback> callbacks = new ArrayList<Callback>();
+    protected final Listeners<Callback> callbacks = new Listeners<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
 
     private final House.Callback houseCallback = new House.Callback() {
 
@@ -80,12 +81,8 @@ public class Appliance {
         super.finalize();
     }
 
-    public void addCallback(Callback listener) {
-        callbacks.add(listener);
-    }
-
-    public void removeCallback(Callback listener) {
-        callbacks.remove(listener);
+    public ListenerRegistration addCallback(Callback listener) {
+        return callbacks.addListener(listener);
     }
 
     public byte getUnitCode() {
@@ -104,7 +101,7 @@ public class Appliance {
         house.turnOff(unitCode);
     }
 
-    public static interface Callback {
+    public static interface Callback extends Listener {
         void turnedOn(Appliance unit);
         void turnedOff(Appliance unit);
     }
