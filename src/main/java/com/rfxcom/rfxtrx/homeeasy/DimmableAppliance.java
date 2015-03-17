@@ -1,5 +1,7 @@
 package com.rfxcom.rfxtrx.homeeasy;
 
+import com.intuso.utilities.listener.ListenerRegistration;
+
 import java.io.IOException;
 
 /**
@@ -49,6 +51,7 @@ public class DimmableAppliance extends Appliance {
             }
         }
     };
+    private final ListenerRegistration listenerRegistration;
 
     protected byte level;
 
@@ -59,12 +62,12 @@ public class DimmableAppliance extends Appliance {
     public DimmableAppliance(House house, byte unitCode, boolean on, byte level) {
         super(house, unitCode, on);
         this.level = level;
-        house.addCallback(houseCallback);
+        this.listenerRegistration = this.house.addCallback(houseCallback);
     }
 
     @Override
     protected void finalize() throws Throwable {
-        house.removeCallback(houseCallback);
+        this.listenerRegistration.removeListener();
         super.finalize();
     }
 

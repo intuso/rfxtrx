@@ -1,13 +1,15 @@
 package com.rfxcom.rfxtrx.homeeasy;
 
+import com.google.common.collect.Lists;
+import com.intuso.utilities.listener.Listener;
+import com.intuso.utilities.listener.ListenerRegistration;
+import com.intuso.utilities.listener.Listeners;
 import com.rfxcom.rfxtrx.RFXtrx;
 import com.rfxcom.rfxtrx.message.Lighting2;
 import com.rfxcom.rfxtrx.message.MessageListener;
 import com.rfxcom.rfxtrx.message.MessageWrapper;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -20,7 +22,7 @@ public class HomeEasy {
 
     private final RFXtrx agent;
     private final Lighting2.SubType subType;
-    private final List<Callback> callbacks = new ArrayList<Callback>();
+    private final Listeners<Callback> callbacks = new Listeners<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
 
     private final MessageListener listener = new MessageListener() {
         @Override
@@ -60,6 +62,7 @@ public class HomeEasy {
             }
         }
     };
+    private final ListenerRegistration listenerRegistration;
 
     public static HomeEasy forUK(RFXtrx agent) {
         return new HomeEasy(agent, Lighting2.SubType.AC);
@@ -72,21 +75,17 @@ public class HomeEasy {
     public HomeEasy(RFXtrx agent, Lighting2.SubType subType) {
         this.agent = agent;
         this.subType = subType;
-        this.agent.addListener(listener);
+        this.listenerRegistration = this.agent.addListener(listener);
     }
 
     @Override
     protected void finalize() throws Throwable {
-        this.agent.removeListener(listener);
+        listenerRegistration.removeListener();
         super.finalize();
     }
 
-    public void addCallback(Callback listener) {
-        callbacks.add(listener);
-    }
-
-    public void removeCallback(Callback listener) {
-        callbacks.remove(listener);
+    public ListenerRegistration addCallback(Callback listener) {
+        return callbacks.addListener(listener);
     }
 
     private void sendCommand(int houseId, byte unitCode, Lighting2.Command command, byte level) throws IOException {
@@ -117,7 +116,7 @@ public class HomeEasy {
         sendCommand(houseId, (byte)0x00, Lighting2.Command.LevelAll, level);
     }
 
-    public static interface Callback {
+    public static interface Callback extends Listener {
         void turnedOn(int houseId, byte unitCode);
         void turnedOnAll(int houseId);
         void turnedOff(int houseId, byte unitCode);

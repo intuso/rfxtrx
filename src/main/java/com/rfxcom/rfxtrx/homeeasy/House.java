@@ -1,8 +1,11 @@
 package com.rfxcom.rfxtrx.homeeasy;
 
+import com.google.common.collect.Lists;
+import com.intuso.utilities.listener.Listener;
+import com.intuso.utilities.listener.ListenerRegistration;
+import com.intuso.utilities.listener.Listeners;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by tomc on 04/11/14.
@@ -11,7 +14,7 @@ public class House {
 
     private final HomeEasy homeEasy;
     private final int houseId;
-    private final List<Callback> callbacks = new ArrayList<Callback>();
+    private final Listeners<Callback> callbacks = new Listeners<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
 
     private final HomeEasy.Callback homeEasyCallback = new HomeEasy.Callback() {
 
@@ -63,25 +66,22 @@ public class House {
             }
         }
     };
+    private final ListenerRegistration listenerRegistration;
 
     public House(HomeEasy homeEasy, int houseId) {
         this.homeEasy = homeEasy;
         this.houseId = houseId;
-        this.homeEasy.addCallback(homeEasyCallback);
+        this.listenerRegistration = this.homeEasy.addCallback(homeEasyCallback);
     }
 
     @Override
     protected void finalize() throws Throwable {
-        this.homeEasy.removeCallback(homeEasyCallback);
+        this.listenerRegistration.removeListener();
         super.finalize();
     }
 
-    public void addCallback(Callback listener) {
-        callbacks.add(listener);
-    }
-
-    public void removeCallback(Callback listener) {
-        callbacks.remove(listener);
+    public ListenerRegistration addCallback(Callback listener) {
+        return callbacks.addListener(listener);
     }
 
     public void turnOn(byte unitCode) throws IOException {
@@ -108,7 +108,7 @@ public class House {
         homeEasy.setLevelAll(houseId, level);
     }
 
-    public static interface Callback {
+    public static interface Callback extends Listener {
         void turnedOn(byte unitCode);
         void turnedOnAll();
         void turnedOff(byte unitCode);

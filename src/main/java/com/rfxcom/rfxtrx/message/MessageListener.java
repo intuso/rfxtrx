@@ -1,5 +1,7 @@
 package com.rfxcom.rfxtrx.message;
 
+import com.intuso.utilities.listener.Listener;
+
 /**
  * Created by IntelliJ IDEA.
  * User: tomc
@@ -7,6 +9,6 @@ package com.rfxcom.rfxtrx.message;
  * Time: 18:34
  * To change this template use File | Settings | File Templates.
  */
-public interface MessageListener {
+public interface MessageListener extends Listener {
     public void messageReceived(MessageWrapper messageWrapper);
 }

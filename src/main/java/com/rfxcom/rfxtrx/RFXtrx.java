@@ -3,6 +3,8 @@ package com.rfxcom.rfxtrx;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.intuso.utilities.listener.ListenerRegistration;
+import com.intuso.utilities.listener.Listeners;
 import com.intuso.utilities.log.Log;
 import com.intuso.utilities.log.LogLevel;
 import com.intuso.utilities.log.writer.StdOutWriter;
@@ -28,8 +30,8 @@ import java.util.regex.Pattern;
 public class RFXtrx {
 
     private final Log log;
-    private final List<Pattern> patterns;
-    private final List<MessageListener> listeners = Lists.newArrayList();
+    private List<Pattern> patterns;
+    private final Listeners<MessageListener> listeners = new Listeners(Lists.newCopyOnWriteArrayList());
     private final EventListener eventListener = new EventListener();
     private final OutputStream out = new OutputStreamWrapper();
     private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<byte[]>();
@@ -45,12 +47,16 @@ public class RFXtrx {
         heartbeatTimer.schedule(new Heartbeat(), 600000L, 600000L); // every 10 minutes, 10 * 60 * 1000 = 600000
     }
 
-    public void addListener(MessageListener listener) {
-        listeners.add(listener);
+    public List<Pattern> getPatterns() {
+        return patterns;
     }
 
-    public void removeListener(MessageListener listener) {
-        listeners.remove(listener);
+    public void setPatterns(List<Pattern> patterns) {
+        this.patterns = patterns;
+    }
+
+    public ListenerRegistration addListener(MessageListener listener) {
+        return listeners.addListener(listener);
     }
 
     public final synchronized void openPort() throws IOException {

@@ -1,5 +1,7 @@
 package com.rfxcom.rfxtrx.homeeasy;
 
+import com.intuso.utilities.listener.ListenerRegistration;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +59,7 @@ public class Appliance {
             // appliances don't have levels
         }
     };
+    private final ListenerRegistration listenerRegistration;
 
     protected boolean on;
 
@@ -68,12 +71,12 @@ public class Appliance {
         this.house = house;
         this.unitCode = unitCode;
         this.on = on;
-        house.addCallback(houseCallback);
+        this.listenerRegistration = this.house.addCallback(houseCallback);
     }
 
     @Override
     protected void finalize() throws Throwable {
-        house.removeCallback(houseCallback);
+        this.listenerRegistration.removeListener();
         super.finalize();
     }
 
