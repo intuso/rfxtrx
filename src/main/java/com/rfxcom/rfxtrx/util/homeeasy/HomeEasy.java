@@ -1,4 +1,4 @@
-package com.rfxcom.rfxtrx.homeeasy;
+package com.rfxcom.rfxtrx.util.homeeasy;
 
 import com.google.common.collect.Lists;
 import com.intuso.utilities.listener.Listener;
@@ -93,11 +93,11 @@ public class HomeEasy {
     }
 
     public void turnOn(int houseId, byte unitCode) throws IOException {
-        sendCommand(houseId, unitCode, Lighting2.Command.On, (byte) 0x00);
+        sendCommand(houseId, unitCode, Lighting2.Command.On, (byte) 0x0F);
     }
 
     public void turnOnAll(int houseId) throws IOException {
-        sendCommand(houseId, (byte)0x00, Lighting2.Command.OnAll, (byte)0x00);
+        sendCommand(houseId, (byte)0x00, Lighting2.Command.OnAll, (byte)0x0F);
     }
 
     public void turnOff(int houseId, byte unitCode) throws IOException {

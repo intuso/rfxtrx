@@ -246,16 +246,19 @@ public class RFXtrx {
             log.d("Message received: " + message.toString());
             MessageWrapper messageWrapper = null;
             switch(message.getPacketType()) {
-                case(InterfaceResponse.PACKET_TYPE) :
+                case InterfaceResponse.PACKET_TYPE:
                     messageWrapper = new InterfaceResponse(message);
                     break;
-                case(Lighting2.PACKET_TYPE) :
-                    messageWrapper = new Lighting2(message);
-                    break;
-                case(Lighting1.PACKET_TYPE) :
+                case Lighting1.PACKET_TYPE:
                     messageWrapper = new Lighting1(message);
                     break;
-                case(Undecoded.PACKET_TYPE) :
+                case Lighting2.PACKET_TYPE:
+                    messageWrapper = new Lighting2(message);
+                    break;
+                case TemperatureSensors.PACKET_TYPE:
+                    messageWrapper = new TemperatureSensors(message);
+                    break;
+                case Undecoded.PACKET_TYPE:
                     messageWrapper = new Undecoded(message);
                     break;
                 default:

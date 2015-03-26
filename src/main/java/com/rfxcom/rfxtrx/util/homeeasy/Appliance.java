@@ -1,4 +1,4 @@
-package com.rfxcom.rfxtrx.homeeasy;
+package com.rfxcom.rfxtrx.util.homeeasy;
 
 import com.google.common.collect.Lists;
 import com.intuso.utilities.listener.Listener;

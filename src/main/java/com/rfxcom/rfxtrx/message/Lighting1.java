@@ -105,8 +105,8 @@ public class Lighting1 extends MessageWrapper {
     }
 
     public double getRSSI() {
-        // lower four bytes are RSSI where 0x0 is weak and 0xF is strong
+        // lower four bits are RSSI where 0x0 is weak and 0xF is strong
         // this function returns 1 as strong and 0 as weak.
-        return ((double)message.getPacketData(RSSI)) / 0xF;
+        return ((double)(message.getPacketData(RSSI) & 0x0F)) / 0xF;
     }
 }

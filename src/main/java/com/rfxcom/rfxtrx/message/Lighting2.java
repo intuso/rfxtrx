@@ -81,15 +81,15 @@ public class Lighting2 extends MessageWrapper {
     
     public int getHouseId() {
         // NB id1 is left-hand most 2 bits of the byte
-        return (message.getPacketData(HOUSE_ID1) << 30) +
-                (message.getPacketData(HOUSE_ID2) << 16) +
-                (message.getPacketData(HOUSE_ID3) << 8) +
-                message.getPacketData(HOUSE_ID4);
+        return ((message.getPacketData(HOUSE_ID1) & 0xFF) << 18) +
+                ((message.getPacketData(HOUSE_ID2) & 0xFF) << 16) +
+                ((message.getPacketData(HOUSE_ID3) & 0xFF) << 8) +
+                (message.getPacketData(HOUSE_ID4) & 0xFF);
     }
     
     public void setHouseId(int houseIid) {
         // NB id1 is left-hand most 2 bits of the byte
-        message.setPacketData(HOUSE_ID1, (byte) (houseIid >> 30));
+        message.setPacketData(HOUSE_ID1, (byte) (houseIid >> 18));
         message.setPacketData(HOUSE_ID2, (byte) (houseIid >> 16));
         message.setPacketData(HOUSE_ID3, (byte) (houseIid >> 8));
         message.setPacketData(HOUSE_ID4, (byte) (houseIid));
@@ -120,8 +120,8 @@ public class Lighting2 extends MessageWrapper {
     }
 
     public double getRSSI() {
-        // lower four bytes are RSSI where 0x0 is weak and 0xF is strong
+        // lower four bits are RSSI where 0x0 is weak and 0xF is strong
         // this function returns 1 as strong and 0 as weak.
-        return ((double)message.getPacketData(RSSI)) / 0xF;
+        return ((double)(message.getPacketData(RSSI) & 0x0F)) / 0xF;
     }
 }

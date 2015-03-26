@@ -1,4 +1,4 @@
-package com.rfxcom.rfxtrx.homeeasy;
+package com.rfxcom.rfxtrx.util.homeeasy;
 
 import com.intuso.utilities.listener.ListenerRegistration;
 
