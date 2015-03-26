@@ -1,4 +1,4 @@
-package com.rfxcom.rfxtrx.util.homeeasy;
+package com.rfxcom.rfxtrx.util.lighting2;
 
 import com.google.common.collect.Lists;
 import com.intuso.utilities.listener.Listener;

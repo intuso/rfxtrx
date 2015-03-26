@@ -1,11 +1,10 @@
-package com.rfxcom.rfxtrx.util.homeeasy;
+package com.rfxcom.rfxtrx.util.lighting2;
 
 import com.google.common.collect.Lists;
 import com.intuso.utilities.listener.Listener;
 import com.intuso.utilities.listener.ListenerRegistration;
 import com.intuso.utilities.listener.Listeners;
 import com.rfxcom.rfxtrx.RFXtrx;
-import com.rfxcom.rfxtrx.message.Lighting2;
 import com.rfxcom.rfxtrx.message.MessageListener;
 import com.rfxcom.rfxtrx.message.MessageWrapper;
 
@@ -18,21 +17,21 @@ import java.io.IOException;
  * Time: 17:53
  * To change this template use File | Settings | File Templates.
  */
-public class HomeEasy {
+public class Lighting2 {
 
     private final RFXtrx agent;
-    private final Lighting2.SubType subType;
+    private final com.rfxcom.rfxtrx.message.Lighting2.SubType subType;
     private final Listeners<Callback> callbacks = new Listeners<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
 
     private final MessageListener listener = new MessageListener() {
         @Override
         public void messageReceived(MessageWrapper messageWrapper) {
-            if(messageWrapper instanceof Lighting2) {
-                Lighting2 lightingMessageWrapper = (Lighting2)messageWrapper;
-                if(lightingMessageWrapper.getSubType() == subType) {
-                    int id = lightingMessageWrapper.getHouseId();
-                    byte unitCode = lightingMessageWrapper.getUnitCode();
-                    switch(lightingMessageWrapper.getCommand()) {
+            if(messageWrapper instanceof com.rfxcom.rfxtrx.message.Lighting2) {
+                com.rfxcom.rfxtrx.message.Lighting2 lighting2MessageWrapper = (com.rfxcom.rfxtrx.message.Lighting2)messageWrapper;
+                if(lighting2MessageWrapper.getSubType() == subType) {
+                    int id = lighting2MessageWrapper.getHouseId();
+                    byte unitCode = lighting2MessageWrapper.getUnitCode();
+                    switch(lighting2MessageWrapper.getCommand()) {
                         case On:
                             for(Callback listener : callbacks)
                                 listener.turnedOn(id, unitCode);
@@ -51,11 +50,11 @@ public class HomeEasy {
                             break;
                         case Level:
                             for(Callback listener : callbacks)
-                                listener.setLevel(id, unitCode, lightingMessageWrapper.getLevel());
+                                listener.setLevel(id, unitCode, lighting2MessageWrapper.getLevel());
                             break;
                         case LevelAll:
                             for(Callback listener : callbacks)
-                                listener.setLevelAll(id, lightingMessageWrapper.getLevel());
+                                listener.setLevelAll(id, lighting2MessageWrapper.getLevel());
                             break;
                     }
                 }
@@ -64,15 +63,19 @@ public class HomeEasy {
     };
     private final ListenerRegistration listenerRegistration;
 
-    public static HomeEasy forUK(RFXtrx agent) {
-        return new HomeEasy(agent, Lighting2.SubType.AC);
+    public static Lighting2 forAC(RFXtrx agent) {
+        return new Lighting2(agent, com.rfxcom.rfxtrx.message.Lighting2.SubType.AC);
     }
 
-    public static HomeEasy forEU(RFXtrx agent) {
-        return new HomeEasy(agent, Lighting2.SubType.HomeEasyEU);
+    public static Lighting2 forHomeEasyEU(RFXtrx agent) {
+        return new Lighting2(agent, com.rfxcom.rfxtrx.message.Lighting2.SubType.HomeEasyEU);
     }
 
-    public HomeEasy(RFXtrx agent, Lighting2.SubType subType) {
+    public static Lighting2 forANSLUT(RFXtrx agent) {
+        return new Lighting2(agent, com.rfxcom.rfxtrx.message.Lighting2.SubType.ANSLUT);
+    }
+
+    public Lighting2(RFXtrx agent, com.rfxcom.rfxtrx.message.Lighting2.SubType subType) {
         this.agent = agent;
         this.subType = subType;
         this.listenerRegistration = this.agent.addListener(listener);
@@ -88,32 +91,32 @@ public class HomeEasy {
         return callbacks.addListener(listener);
     }
 
-    private void sendCommand(int houseId, byte unitCode, Lighting2.Command command, byte level) throws IOException {
-        agent.sendMessage(new Lighting2(subType, houseId, unitCode, command, level));
+    private void sendCommand(int houseId, byte unitCode, com.rfxcom.rfxtrx.message.Lighting2.Command command, byte level) throws IOException {
+        agent.sendMessage(new com.rfxcom.rfxtrx.message.Lighting2(subType, houseId, unitCode, command, level));
     }
 
     public void turnOn(int houseId, byte unitCode) throws IOException {
-        sendCommand(houseId, unitCode, Lighting2.Command.On, (byte) 0x0F);
+        sendCommand(houseId, unitCode, com.rfxcom.rfxtrx.message.Lighting2.Command.On, (byte) 0x0F);
     }
 
     public void turnOnAll(int houseId) throws IOException {
-        sendCommand(houseId, (byte)0x00, Lighting2.Command.OnAll, (byte)0x0F);
+        sendCommand(houseId, (byte)0x00, com.rfxcom.rfxtrx.message.Lighting2.Command.OnAll, (byte)0x0F);
     }
 
     public void turnOff(int houseId, byte unitCode) throws IOException {
-        sendCommand(houseId, unitCode, Lighting2.Command.Off, (byte)0x00);
+        sendCommand(houseId, unitCode, com.rfxcom.rfxtrx.message.Lighting2.Command.Off, (byte)0x00);
     }
 
     public void turnOffAll(int houseId) throws IOException {
-        sendCommand(houseId, (byte)0x00, Lighting2.Command.OffAll, (byte)0x00);
+        sendCommand(houseId, (byte)0x00, com.rfxcom.rfxtrx.message.Lighting2.Command.OffAll, (byte)0x00);
     }
 
     public void setLevel(int houseId, byte unitCode, byte level) throws IOException {
-        sendCommand(houseId, unitCode, Lighting2.Command.Level, level);
+        sendCommand(houseId, unitCode, com.rfxcom.rfxtrx.message.Lighting2.Command.Level, level);
     }
 
     public void setLevelAll(int houseId, byte level) throws IOException {
-        sendCommand(houseId, (byte)0x00, Lighting2.Command.LevelAll, level);
+        sendCommand(houseId, (byte)0x00, com.rfxcom.rfxtrx.message.Lighting2.Command.LevelAll, level);
     }
 
     public static interface Callback extends Listener {

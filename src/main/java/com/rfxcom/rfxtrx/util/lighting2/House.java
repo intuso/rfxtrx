@@ -1,4 +1,4 @@
-package com.rfxcom.rfxtrx.util.homeeasy;
+package com.rfxcom.rfxtrx.util.lighting2;
 
 import com.google.common.collect.Lists;
 import com.intuso.utilities.listener.Listener;
@@ -12,11 +12,11 @@ import java.io.IOException;
  */
 public class House {
 
-    private final HomeEasy homeEasy;
+    private final Lighting2 lighting2;
     private final int houseId;
     private final Listeners<Callback> callbacks = new Listeners<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
 
-    private final HomeEasy.Callback homeEasyCallback = new HomeEasy.Callback() {
+    private final Lighting2.Callback homeEasyCallback = new Lighting2.Callback() {
 
         @Override
         public void turnedOn(int houseId, byte unitCode) {
@@ -68,10 +68,10 @@ public class House {
     };
     private final ListenerRegistration listenerRegistration;
 
-    public House(HomeEasy homeEasy, int houseId) {
-        this.homeEasy = homeEasy;
+    public House(Lighting2 lighting2, int houseId) {
+        this.lighting2 = lighting2;
         this.houseId = houseId;
-        this.listenerRegistration = this.homeEasy.addCallback(homeEasyCallback);
+        this.listenerRegistration = this.lighting2.addCallback(homeEasyCallback);
     }
 
     @Override
@@ -85,27 +85,27 @@ public class House {
     }
 
     public void turnOn(byte unitCode) throws IOException {
-        homeEasy.turnOn(houseId, unitCode);
+        lighting2.turnOn(houseId, unitCode);
     }
 
     public void turnOnAll() throws IOException {
-        homeEasy.turnOnAll(houseId);
+        lighting2.turnOnAll(houseId);
     }
 
     public void turnOff(byte unitCode) throws IOException {
-        homeEasy.turnOff(houseId, unitCode);
+        lighting2.turnOff(houseId, unitCode);
     }
 
     public void turnOffAll() throws IOException {
-        homeEasy.turnOffAll(houseId);
+        lighting2.turnOffAll(houseId);
     }
 
     public void setLevel(byte unitCode, byte level) throws IOException {
-        homeEasy.setLevel(houseId, unitCode, level);
+        lighting2.setLevel(houseId, unitCode, level);
     }
 
     public void setLevelAll(byte level) throws IOException {
-        homeEasy.setLevelAll(houseId, level);
+        lighting2.setLevelAll(houseId, level);
     }
 
     public static interface Callback extends Listener {
