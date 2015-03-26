@@ -36,10 +36,11 @@ public class Lighting1 extends MessageWrapper {
     public enum Command {
         Off((byte)0),
         On((byte)1),
-        Level((byte)2),
-        GroupOff((byte)3),
-        GroupOn((byte)4),
-        GroupLevel((byte)5);
+        Dim((byte)2),
+        Bright((byte)3),
+        OffAll((byte)5),
+        OnAll((byte)6),
+        Chime((byte)7);
 
         private byte code;
 
@@ -65,9 +66,9 @@ public class Lighting1 extends MessageWrapper {
         super(message);
     }
 
-    public Lighting1(SubType subType, byte housecode, byte unitCode, Command command) {
+    public Lighting1(SubType subType, byte houseCode, byte unitCode, Command command) {
         super(new Message(PACKET_TYPE, subType.code, new byte[4]));
-        setHouseCode(housecode);
+        setHouseCode(houseCode);
         setUnitCode(unitCode);
         setCommand(command);
     }
