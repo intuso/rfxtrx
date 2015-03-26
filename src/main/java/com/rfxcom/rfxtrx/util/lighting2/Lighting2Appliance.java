@@ -1,4 +1,4 @@
-package com.rfxcom.rfxtrx.util.lighting1;
+package com.rfxcom.rfxtrx.util.lighting2;
 
 import com.google.common.collect.Lists;
 import com.intuso.utilities.listener.Listener;
@@ -10,58 +10,53 @@ import java.io.IOException;
 /**
 * Created by tomc on 04/11/14.
 */
-public class Appliance {
+public class Lighting2Appliance {
 
-    protected final com.rfxcom.rfxtrx.util.lighting1.House house;
+    protected final Lighting2House lighting2House;
     protected final byte unitCode;
     protected final Listeners<Callback> callbacks = new Listeners<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
 
-    private final com.rfxcom.rfxtrx.util.lighting1.House.Callback houseCallback = new com.rfxcom.rfxtrx.util.lighting1.House.Callback() {
+    private final Lighting2House.Callback houseCallback = new Lighting2House.Callback() {
 
         @Override
         public void turnedOn(byte unitCode) {
-            if (Appliance.this.unitCode == unitCode) {
-                Appliance.this.on = true;
+            if (Lighting2Appliance.this.unitCode == unitCode) {
+                Lighting2Appliance.this.on = true;
                 for (Callback listener : callbacks)
-                    listener.turnedOn(Appliance.this);
+                    listener.turnedOn(Lighting2Appliance.this);
             }
         }
 
         @Override
         public void turnedOnAll() {
-            Appliance.this.on = true;
+            Lighting2Appliance.this.on = true;
             for (Callback listener : callbacks)
-                listener.turnedOn(Appliance.this);
+                listener.turnedOn(Lighting2Appliance.this);
         }
 
         @Override
         public void turnedOff(byte unitCode) {
-            if (Appliance.this.unitCode == unitCode) {
-                Appliance.this.on = false;
+            if (Lighting2Appliance.this.unitCode == unitCode) {
+                Lighting2Appliance.this.on = false;
                 for (Callback listener : callbacks)
-                    listener.turnedOff(Appliance.this);
+                    listener.turnedOff(Lighting2Appliance.this);
             }
         }
 
         @Override
         public void turnedOffAll() {
-            Appliance.this.on = false;
+            Lighting2Appliance.this.on = false;
             for (Callback listener : callbacks)
-                listener.turnedOff(Appliance.this);
+                listener.turnedOff(Lighting2Appliance.this);
         }
 
         @Override
-        public void dim(byte unitCode) {
+        public void setLevel(byte unitCode, byte level) {
             // appliances don't have levels
         }
 
         @Override
-        public void bright(byte unitCode) {
-            // appliances don't have levels
-        }
-
-        @Override
-        public void chime() {
+        public void setLevelAll(byte level) {
             // appliances don't have levels
         }
     };
@@ -69,15 +64,15 @@ public class Appliance {
 
     protected boolean on;
 
-    public Appliance(com.rfxcom.rfxtrx.util.lighting1.House house, byte unitCode) {
-        this(house, unitCode, false);
+    public Lighting2Appliance(Lighting2House lighting2House, byte unitCode) {
+        this(lighting2House, unitCode, false);
     }
 
-    public Appliance(House house, byte unitCode, boolean on) {
-        this.house = house;
+    public Lighting2Appliance(Lighting2House lighting2House, byte unitCode, boolean on) {
+        this.lighting2House = lighting2House;
         this.unitCode = unitCode;
         this.on = on;
-        this.listenerRegistration = this.house.addCallback(houseCallback);
+        this.listenerRegistration = this.lighting2House.addCallback(houseCallback);
     }
 
     @Override
@@ -99,15 +94,15 @@ public class Appliance {
     }
 
     public void turnOn() throws IOException {
-        house.turnOn(unitCode);
+        lighting2House.turnOn(unitCode);
     }
 
     public void turnOff() throws IOException {
-        house.turnOff(unitCode);
+        lighting2House.turnOff(unitCode);
     }
 
     public static interface Callback extends Listener {
-        void turnedOn(Appliance unit);
-        void turnedOff(Appliance unit);
+        void turnedOn(Lighting2Appliance unit);
+        void turnedOff(Lighting2Appliance unit);
     }
 }

@@ -1,4 +1,4 @@
-package com.rfxcom.rfxtrx.util.lighting2;
+package com.rfxcom.rfxtrx.util.lighting1;
 
 import com.google.common.collect.Lists;
 import com.intuso.utilities.listener.Listener;
@@ -10,53 +10,58 @@ import java.io.IOException;
 /**
 * Created by tomc on 04/11/14.
 */
-public class Appliance {
+public class Lighting1Appliance {
 
-    protected final House house;
+    protected final Lighting1House lighting1House;
     protected final byte unitCode;
     protected final Listeners<Callback> callbacks = new Listeners<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
 
-    private final House.Callback houseCallback = new House.Callback() {
+    private final Lighting1House.Callback houseCallback = new Lighting1House.Callback() {
 
         @Override
         public void turnedOn(byte unitCode) {
-            if (Appliance.this.unitCode == unitCode) {
-                Appliance.this.on = true;
+            if (Lighting1Appliance.this.unitCode == unitCode) {
+                Lighting1Appliance.this.on = true;
                 for (Callback listener : callbacks)
-                    listener.turnedOn(Appliance.this);
+                    listener.turnedOn(Lighting1Appliance.this);
             }
         }
 
         @Override
         public void turnedOnAll() {
-            Appliance.this.on = true;
+            Lighting1Appliance.this.on = true;
             for (Callback listener : callbacks)
-                listener.turnedOn(Appliance.this);
+                listener.turnedOn(Lighting1Appliance.this);
         }
 
         @Override
         public void turnedOff(byte unitCode) {
-            if (Appliance.this.unitCode == unitCode) {
-                Appliance.this.on = false;
+            if (Lighting1Appliance.this.unitCode == unitCode) {
+                Lighting1Appliance.this.on = false;
                 for (Callback listener : callbacks)
-                    listener.turnedOff(Appliance.this);
+                    listener.turnedOff(Lighting1Appliance.this);
             }
         }
 
         @Override
         public void turnedOffAll() {
-            Appliance.this.on = false;
+            Lighting1Appliance.this.on = false;
             for (Callback listener : callbacks)
-                listener.turnedOff(Appliance.this);
+                listener.turnedOff(Lighting1Appliance.this);
         }
 
         @Override
-        public void setLevel(byte unitCode, byte level) {
+        public void dim(byte unitCode) {
             // appliances don't have levels
         }
 
         @Override
-        public void setLevelAll(byte level) {
+        public void bright(byte unitCode) {
+            // appliances don't have levels
+        }
+
+        @Override
+        public void chime() {
             // appliances don't have levels
         }
     };
@@ -64,15 +69,15 @@ public class Appliance {
 
     protected boolean on;
 
-    public Appliance(House house, byte unitCode) {
-        this(house, unitCode, false);
+    public Lighting1Appliance(Lighting1House lighting1House, byte unitCode) {
+        this(lighting1House, unitCode, false);
     }
 
-    public Appliance(House house, byte unitCode, boolean on) {
-        this.house = house;
+    public Lighting1Appliance(Lighting1House lighting1House, byte unitCode, boolean on) {
+        this.lighting1House = lighting1House;
         this.unitCode = unitCode;
         this.on = on;
-        this.listenerRegistration = this.house.addCallback(houseCallback);
+        this.listenerRegistration = this.lighting1House.addCallback(houseCallback);
     }
 
     @Override
@@ -94,15 +99,15 @@ public class Appliance {
     }
 
     public void turnOn() throws IOException {
-        house.turnOn(unitCode);
+        lighting1House.turnOn(unitCode);
     }
 
     public void turnOff() throws IOException {
-        house.turnOff(unitCode);
+        lighting1House.turnOff(unitCode);
     }
 
     public static interface Callback extends Listener {
-        void turnedOn(Appliance unit);
-        void turnedOff(Appliance unit);
+        void turnedOn(Lighting1Appliance unit);
+        void turnedOff(Lighting1Appliance unit);
     }
 }

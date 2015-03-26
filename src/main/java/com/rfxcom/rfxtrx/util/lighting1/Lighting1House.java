@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * Created by tomc on 04/11/14.
  */
-public class House {
+public class Lighting1House {
 
     private final Lighting1 lighting1;
     private final byte houseId;
@@ -20,7 +20,7 @@ public class House {
 
         @Override
         public void turnedOn(int houseId, byte unitCode) {
-            if (House.this.houseId == houseId) {
+            if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOn(unitCode);
             }
@@ -28,7 +28,7 @@ public class House {
 
         @Override
         public void turnedOnAll(int houseId) {
-            if (House.this.houseId == houseId) {
+            if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOnAll();
             }
@@ -36,7 +36,7 @@ public class House {
 
         @Override
         public void turnedOff(int houseId, byte unitCode) {
-            if (House.this.houseId == houseId) {
+            if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOff(unitCode);
             }
@@ -44,7 +44,7 @@ public class House {
 
         @Override
         public void turnedOffAll(int houseId) {
-            if (House.this.houseId == houseId) {
+            if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOffAll();
             }
@@ -52,7 +52,7 @@ public class House {
 
         @Override
         public void dim(int houseId, byte unitCode) {
-            if (House.this.houseId == houseId) {
+            if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.dim(unitCode);
             }
@@ -60,7 +60,7 @@ public class House {
 
         @Override
         public void bright(int houseId, byte unitCode) {
-            if (House.this.houseId == houseId) {
+            if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.bright(unitCode);
             }
@@ -68,7 +68,7 @@ public class House {
 
         @Override
         public void chime(int houseId) {
-            if (House.this.houseId == houseId) {
+            if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.chime();
             }
@@ -76,7 +76,7 @@ public class House {
     };
     private final ListenerRegistration listenerRegistration;
 
-    public House(Lighting1 lighting1, byte houseId) {
+    public Lighting1House(Lighting1 lighting1, byte houseId) {
         this.lighting1 = lighting1;
         this.houseId = houseId;
         this.listenerRegistration = this.lighting1.addCallback(homeEasyCallback);

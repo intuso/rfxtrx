@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * Created by tomc on 04/11/14.
  */
-public class House {
+public class Lighting2House {
 
     private final Lighting2 lighting2;
     private final int houseId;
@@ -20,7 +20,7 @@ public class House {
 
         @Override
         public void turnedOn(int houseId, byte unitCode) {
-            if (House.this.houseId == houseId) {
+            if (Lighting2House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOn(unitCode);
             }
@@ -28,7 +28,7 @@ public class House {
 
         @Override
         public void turnedOnAll(int houseId) {
-            if (House.this.houseId == houseId) {
+            if (Lighting2House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOnAll();
             }
@@ -36,7 +36,7 @@ public class House {
 
         @Override
         public void turnedOff(int houseId, byte unitCode) {
-            if (House.this.houseId == houseId) {
+            if (Lighting2House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOff(unitCode);
             }
@@ -44,7 +44,7 @@ public class House {
 
         @Override
         public void turnedOffAll(int houseId) {
-            if (House.this.houseId == houseId) {
+            if (Lighting2House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOffAll();
             }
@@ -52,7 +52,7 @@ public class House {
 
         @Override
         public void setLevel(int houseId, byte unitCode, byte level) {
-            if (House.this.houseId == houseId) {
+            if (Lighting2House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.setLevel(unitCode, level);
             }
@@ -60,7 +60,7 @@ public class House {
 
         @Override
         public void setLevelAll(int houseId, byte level) {
-            if (House.this.houseId == houseId) {
+            if (Lighting2House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.setLevelAll(level);
             }
@@ -68,7 +68,7 @@ public class House {
     };
     private final ListenerRegistration listenerRegistration;
 
-    public House(Lighting2 lighting2, int houseId) {
+    public Lighting2House(Lighting2 lighting2, int houseId) {
         this.lighting2 = lighting2;
         this.houseId = houseId;
         this.listenerRegistration = this.lighting2.addCallback(homeEasyCallback);
