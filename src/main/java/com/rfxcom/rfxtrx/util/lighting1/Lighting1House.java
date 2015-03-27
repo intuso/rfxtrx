@@ -19,7 +19,7 @@ public class Lighting1House {
     private final Lighting1.Callback homeEasyCallback = new Lighting1.Callback() {
 
         @Override
-        public void turnedOn(int houseId, byte unitCode) {
+        public void turnedOn(byte houseId, byte unitCode) {
             if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOn(unitCode);
@@ -27,7 +27,7 @@ public class Lighting1House {
         }
 
         @Override
-        public void turnedOnAll(int houseId) {
+        public void turnedOnAll(byte houseId) {
             if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOnAll();
@@ -35,7 +35,7 @@ public class Lighting1House {
         }
 
         @Override
-        public void turnedOff(int houseId, byte unitCode) {
+        public void turnedOff(byte houseId, byte unitCode) {
             if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOff(unitCode);
@@ -43,7 +43,7 @@ public class Lighting1House {
         }
 
         @Override
-        public void turnedOffAll(int houseId) {
+        public void turnedOffAll(byte houseId) {
             if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.turnedOffAll();
@@ -51,7 +51,7 @@ public class Lighting1House {
         }
 
         @Override
-        public void dim(int houseId, byte unitCode) {
+        public void dim(byte houseId, byte unitCode) {
             if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.dim(unitCode);
@@ -59,7 +59,7 @@ public class Lighting1House {
         }
 
         @Override
-        public void bright(int houseId, byte unitCode) {
+        public void bright(byte houseId, byte unitCode) {
             if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.bright(unitCode);
@@ -67,7 +67,7 @@ public class Lighting1House {
         }
 
         @Override
-        public void chime(int houseId) {
+        public void chime(byte houseId) {
             if (Lighting1House.this.houseId == houseId) {
                 for (Callback listener : callbacks)
                     listener.chime();

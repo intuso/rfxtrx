@@ -29,7 +29,7 @@ public class Lighting1 {
             if(messageWrapper instanceof com.rfxcom.rfxtrx.message.Lighting1) {
                 com.rfxcom.rfxtrx.message.Lighting1 lighting1MessageWrapper = (com.rfxcom.rfxtrx.message.Lighting1)messageWrapper;
                 if(lighting1MessageWrapper.getSubType() == subType) {
-                    int houseCode = lighting1MessageWrapper.getHouseCode();
+                    byte houseCode = lighting1MessageWrapper.getHouseCode();
                     byte unitCode = lighting1MessageWrapper.getUnitCode();
                     switch(lighting1MessageWrapper.getCommand()) {
                         case On:
@@ -140,12 +140,12 @@ public class Lighting1 {
     }
 
     public static interface Callback extends Listener {
-        void turnedOn(int houseCode, byte unitCode);
-        void turnedOnAll(int houseCode);
-        void turnedOff(int houseCode, byte unitCode);
-        void turnedOffAll(int houseCode);
-        void dim(int houseCode, byte unitCode);
-        void bright(int houseCode, byte unitCode);
-        void chime(int houseCode);
+        void turnedOn(byte houseCode, byte unitCode);
+        void turnedOnAll(byte houseCode);
+        void turnedOff(byte houseCode, byte unitCode);
+        void turnedOffAll(byte houseCode);
+        void dim(byte houseCode, byte unitCode);
+        void bright(byte houseCode, byte unitCode);
+        void chime(byte houseCode);
     }
 }
