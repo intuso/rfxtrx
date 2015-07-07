@@ -49,3 +49,7 @@ Thumbs.db
 # Conf location for testing #
 ######################
 work.dir
+
+# SDK docs copyrighed #
+######################
+RFXtrx SDK.pdf
