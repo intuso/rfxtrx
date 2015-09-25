@@ -14,12 +14,12 @@
 	<dependencies>
         <dependency>
             <groupId>com.intuso.utilities</groupId>
-            <artifactId>log</artifactId>
+            <artifactId>utilities-log</artifactId>
             <version>${intuso.utils.version}</version>
         </dependency>
         <dependency>
             <groupId>com.intuso.utilities</groupId>
-            <artifactId>listener</artifactId>
+            <artifactId>utilities-listener</artifactId>
             <version>${intuso.utils.version}</version>
         </dependency>
         <dependency>
