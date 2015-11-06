@@ -8,6 +8,8 @@
 	<description>Java library for the RFXtrx433</description>
 
     <properties>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
         <intuso.utils.version>1.1.0-SNAPSHOT</intuso.utils.version>
     </properties>
 
@@ -41,21 +43,6 @@
         </dependency>
 
     </dependencies>
-
-	<build>
-		<!-- Use Java 1.6 -->
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 
     <scm>
         <connection>scm:svn:svn+ssh://tom@dev.intuso.com/svn/intuso.com/RFXtrx433JavaLib/trunk</connection>
