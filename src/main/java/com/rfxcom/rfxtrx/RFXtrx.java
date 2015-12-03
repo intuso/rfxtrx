@@ -5,11 +5,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.intuso.utilities.listener.ListenerRegistration;
 import com.intuso.utilities.listener.Listeners;
-import com.intuso.utilities.log.Log;
-import com.intuso.utilities.log.LogLevel;
-import com.intuso.utilities.log.writer.StdOutWriter;
 import com.rfxcom.rfxtrx.message.*;
 import jssc.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,19 +28,23 @@ import java.util.regex.Pattern;
  */
 public class RFXtrx {
 
-    private final Log log;
+    private final Logger logger;
     private List<Pattern> patterns;
     private final Listeners<MessageListener> listeners = new Listeners(Lists.newCopyOnWriteArrayList());
     private final EventListener eventListener = new EventListener();
     private final OutputStream out = new OutputStreamWrapper();
-    private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<byte[]>();
+    private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<>();
     private final Thread parserThread = new Thread(new Parser());
     private final Timer heartbeatTimer = new Timer("heartbeatTimer", true);
 
     private SerialPort port;
 
-    public RFXtrx(Log log, List<Pattern> patterns) {
-        this.log = log;
+    public RFXtrx(List<Pattern> patterns) {
+        this(LoggerFactory.getLogger(RFXtrx.class), patterns);
+    }
+
+    public RFXtrx(Logger logger, List<Pattern> patterns) {
+        this.logger = logger;
         this.patterns = patterns;
         parserThread.start();
         heartbeatTimer.schedule(new Heartbeat(), 600000L, 600000L); // every 10 minutes, 10 * 60 * 1000 = 600000
@@ -61,17 +64,17 @@ public class RFXtrx {
 
     public final synchronized void openPort() throws IOException {
         outer: for(Pattern pattern : patterns) {
-            log.d("Looking for comm ports matching " + pattern);
+            logger.debug("Looking for comm ports matching " + pattern);
             Set<String> pns = Sets.newHashSet(SerialPortList.getPortNames(pattern));
             if (pns.size() > 0) {
-                log.d("Found comm ports " + Joiner.on(",").join(pns));
+                logger.debug("Found comm ports " + Joiner.on(",").join(pns));
                 for(String pn : pns) {
-                    log.d("Trying " + pn);
+                    logger.debug("Trying " + pn);
                     try {
                         openPort(pn);
                         break outer;
                     } catch(Throwable t) {
-                        log.w("Failed to open " + pn);
+                        logger.warn("Failed to open " + pn);
                     }
                 }
             } else
@@ -86,7 +89,7 @@ public class RFXtrx {
             if (portName == null)
                 throw new IOException("No port name set");
 
-            log.d("Attempting to open serial port " + portName);
+            logger.debug("Attempting to open serial port " + portName);
             port = new SerialPort(portName);
             port.openPort();
             port.setParams(SerialPort.BAUDRATE_38400, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
@@ -97,7 +100,7 @@ public class RFXtrx {
             } catch (InterruptedException e) {}
             port.readBytes(port.getOutputBufferBytesCount());
             sendMessage(new Interface(Interface.Command.GetStatus));
-            log.d("Successfully opened serial port");
+            logger.debug("Successfully opened serial port");
         } catch (SerialPortException e) {
             throw new IOException(e);
         }
@@ -111,7 +114,7 @@ public class RFXtrx {
         try {
             openPort();
         } catch (IOException e) {
-            log.e("Couldn't open serial port", e);
+            logger.error("Couldn't open serial port", e);
             this.port = null;
         }
     }
@@ -139,11 +142,11 @@ public class RFXtrx {
     }
 
     public synchronized void sendMessage(MessageWrapper messageWrapper) throws IOException {
-        log.d("Sending message: " + messageWrapper.toString());
+        logger.debug("Sending message: " + messageWrapper.toString());
         try {
             messageWrapper.writeTo(out, (byte) 0);
         } catch(IOException e) {
-            log.w("Failed to write to socket, attempting close, open and re-write before failing", e);
+            logger.warn("Failed to write to socket, attempting close, open and re-write before failing", e);
             closePort();
             openPortSafe();
             if(port == null)
@@ -165,7 +168,7 @@ public class RFXtrx {
                 while((available = port.getInputBufferBytesCount()) > 0)
                     readData.add(port.readBytes(available));
             } catch(SerialPortException e) {
-                log.e("Failed to read data from serial port", e);
+                logger.error("Failed to read data from serial port", e);
             }
         }
     }
@@ -195,13 +198,13 @@ public class RFXtrx {
                     while (true) {
                         packetLength = readBytes(1)[0];
                         if (packetLength < 0) {
-                            log.e("Packet length was -ve, stream was closed");
+                            logger.error("Packet length was -ve, stream was closed");
                             break outer;
                         } else if (packetLength < 3) {
-                            log.e("Packet length was " + packetLength + ". Should be at least 3!");
+                            logger.error("Packet length was " + packetLength + ". Should be at least 3!");
                             break outer;
                         } else
-                            log.d("Read packet length as 0x" + Integer.toHexString(packetLength));
+                            logger.debug("Read packet length as 0x" + Integer.toHexString(packetLength));
                         packetType = readBytes(1)[0];
                         packetSubType = readBytes(1)[0];
                         sequenceNumber = readBytes(1)[0];
@@ -210,7 +213,7 @@ public class RFXtrx {
                     }
                 }
             } catch(InterruptedException e) {
-                log.e("Error reading from stream");
+                logger.error("Error reading from stream");
             }
         }
 
@@ -243,7 +246,7 @@ public class RFXtrx {
         }
 
         private void messageReceived(Message message, byte sequenceNumber) {
-            log.d("Message received: " + message.toString());
+            logger.debug("Message received: " + message.toString());
             MessageWrapper messageWrapper = null;
             switch(message.getPacketType()) {
                 case InterfaceResponse.PACKET_TYPE:
@@ -262,7 +265,7 @@ public class RFXtrx {
                     messageWrapper = new Undecoded(message);
                     break;
                 default:
-                    log.d("Unknown packet type");
+                logger.debug("Unknown packet type");
             }
             if(messageWrapper != null)
                 RFXtrx.this.messageReceived(messageWrapper);
@@ -277,14 +280,14 @@ public class RFXtrx {
                 try {
                     sendMessage(new Interface(Interface.Command.GetStatus));
                 } catch (IOException e) {
-                    log.w("Failed to get status for heartbeat", e);
+                    logger.warn("Failed to get status for heartbeat", e);
                 }
             }
         }
     }
 
     public static void main(String[] args) throws IOException {
-        RFXtrx rfxtrx = new RFXtrx(new Log(new StdOutWriter(LogLevel.DEBUG)), Lists.newArrayList(Pattern.compile(".*ttyUSB.*")));
+        RFXtrx rfxtrx = new RFXtrx(Lists.newArrayList(Pattern.compile(".*ttyUSB.*")));
         rfxtrx.openPortSafe();
         rfxtrx.sendMessage(new Interface(Interface.Command.EnableAllModes));
         rfxtrx.sendMessage(new Interface(Interface.Command.EnableUndecoded));
