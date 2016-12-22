@@ -1,7 +1,6 @@
 package com.rfxcom.rfxtrx.util.temperaturesensor;
 
 import com.google.common.collect.Lists;
-import com.intuso.utilities.listener.Listener;
 import com.intuso.utilities.listener.ListenerRegistration;
 import com.intuso.utilities.listener.Listeners;
 
@@ -42,7 +41,7 @@ public class TemperatureSensor {
         return callbacks.addListener(listener);
     }
 
-    public static interface Callback extends Listener {
+    public interface Callback {
         void newTemperature(double temperature);
     }
 }

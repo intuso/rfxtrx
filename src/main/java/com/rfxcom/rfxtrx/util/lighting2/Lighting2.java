@@ -1,7 +1,6 @@
 package com.rfxcom.rfxtrx.util.lighting2;
 
 import com.google.common.collect.Lists;
-import com.intuso.utilities.listener.Listener;
 import com.intuso.utilities.listener.ListenerRegistration;
 import com.intuso.utilities.listener.Listeners;
 import com.rfxcom.rfxtrx.RFXtrx;
@@ -21,7 +20,7 @@ public class Lighting2 {
 
     private final RFXtrx agent;
     private final com.rfxcom.rfxtrx.message.Lighting2.SubType subType;
-    private final Listeners<Callback> callbacks = new Listeners<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
+    private final Listeners<Callback> callbacks = new Listeners<>(Lists.<Callback>newCopyOnWriteArrayList());
 
     private final MessageListener listener = new MessageListener() {
         @Override
@@ -119,7 +118,7 @@ public class Lighting2 {
         sendCommand(houseId, (byte)0x00, com.rfxcom.rfxtrx.message.Lighting2.Command.LevelAll, level);
     }
 
-    public static interface Callback extends Listener {
+    public interface Callback {
         void turnedOn(int houseId, byte unitCode);
         void turnedOnAll(int houseId);
         void turnedOff(int houseId, byte unitCode);

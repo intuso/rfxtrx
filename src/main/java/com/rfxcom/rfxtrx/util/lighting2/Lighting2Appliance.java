@@ -1,7 +1,6 @@
 package com.rfxcom.rfxtrx.util.lighting2;
 
 import com.google.common.collect.Lists;
-import com.intuso.utilities.listener.Listener;
 import com.intuso.utilities.listener.ListenerRegistration;
 import com.intuso.utilities.listener.Listeners;
 
@@ -101,7 +100,7 @@ public class Lighting2Appliance {
         lighting2House.turnOff(unitCode);
     }
 
-    public static interface Callback extends Listener {
+    public interface Callback {
         void turnedOn(Lighting2Appliance unit);
         void turnedOff(Lighting2Appliance unit);
     }
