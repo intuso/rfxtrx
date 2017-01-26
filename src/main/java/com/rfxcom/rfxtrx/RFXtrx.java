@@ -3,8 +3,8 @@ package com.rfxcom.rfxtrx;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.intuso.utilities.listener.ListenerRegistration;
-import com.intuso.utilities.listener.Listeners;
+import com.intuso.utilities.listener.MemberRegistration;
+import com.intuso.utilities.listener.ManagedCollection;
 import com.rfxcom.rfxtrx.message.*;
 import jssc.*;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class RFXtrx {
 
     private final Logger logger;
     private List<Pattern> patterns;
-    private final Listeners<MessageListener> listeners = new Listeners(Lists.newCopyOnWriteArrayList());
+    private final ManagedCollection<MessageListener> listeners = new ManagedCollection(Lists.newCopyOnWriteArrayList());
     private final EventListener eventListener = new EventListener();
     private final OutputStream out = new OutputStreamWrapper();
     private final LinkedBlockingDeque<byte[]> readData = new LinkedBlockingDeque<>();
@@ -58,8 +58,8 @@ public class RFXtrx {
         this.patterns = patterns;
     }
 
-    public ListenerRegistration addListener(MessageListener listener) {
-        return listeners.addListener(listener);
+    public MemberRegistration addListener(MessageListener listener) {
+        return listeners.add(listener);
     }
 
     public final synchronized void openPort() throws IOException {

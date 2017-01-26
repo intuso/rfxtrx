@@ -18,7 +18,7 @@
         <!-- Listener library -->
         <dependency>
             <groupId>com.intuso.utilities</groupId>
-            <artifactId>utilities-listener</artifactId>
+            <artifactId>utilities-collection</artifactId>
             <version>${intuso.utils.version}</version>
         </dependency>
 

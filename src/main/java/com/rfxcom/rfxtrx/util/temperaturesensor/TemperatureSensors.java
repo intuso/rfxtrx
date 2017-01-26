@@ -1,8 +1,8 @@
 package com.rfxcom.rfxtrx.util.temperaturesensor;
 
 import com.google.common.collect.Lists;
-import com.intuso.utilities.listener.ListenerRegistration;
-import com.intuso.utilities.listener.Listeners;
+import com.intuso.utilities.listener.MemberRegistration;
+import com.intuso.utilities.listener.ManagedCollection;
 import com.rfxcom.rfxtrx.RFXtrx;
 import com.rfxcom.rfxtrx.message.MessageListener;
 import com.rfxcom.rfxtrx.message.MessageWrapper;
@@ -18,7 +18,7 @@ public class TemperatureSensors {
 
     private final RFXtrx agent;
     private final com.rfxcom.rfxtrx.message.TemperatureSensors.SubType subType;
-    private final Listeners<Callback> callbacks = new Listeners<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
+    private final ManagedCollection<Callback> callbacks = new ManagedCollection<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
 
     private final MessageListener listener = new MessageListener() {
         @Override
@@ -34,7 +34,7 @@ public class TemperatureSensors {
             }
         }
     };
-    private final ListenerRegistration listenerRegistration;
+    private final MemberRegistration listenerRegistration;
 
     public static TemperatureSensors forTemp1(RFXtrx agent) {
         return new TemperatureSensors(agent, com.rfxcom.rfxtrx.message.TemperatureSensors.SubType.TEMP1);
@@ -68,8 +68,8 @@ public class TemperatureSensors {
         super.finalize();
     }
 
-    public ListenerRegistration addCallback(Callback listener) {
-        return callbacks.addListener(listener);
+    public MemberRegistration addCallback(Callback listener) {
+        return callbacks.add(listener);
     }
 
     public interface Callback {

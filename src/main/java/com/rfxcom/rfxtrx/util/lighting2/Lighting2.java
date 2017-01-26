@@ -1,8 +1,8 @@
 package com.rfxcom.rfxtrx.util.lighting2;
 
 import com.google.common.collect.Lists;
-import com.intuso.utilities.listener.ListenerRegistration;
-import com.intuso.utilities.listener.Listeners;
+import com.intuso.utilities.listener.MemberRegistration;
+import com.intuso.utilities.listener.ManagedCollection;
 import com.rfxcom.rfxtrx.RFXtrx;
 import com.rfxcom.rfxtrx.message.MessageListener;
 import com.rfxcom.rfxtrx.message.MessageWrapper;
@@ -20,7 +20,7 @@ public class Lighting2 {
 
     private final RFXtrx agent;
     private final com.rfxcom.rfxtrx.message.Lighting2.SubType subType;
-    private final Listeners<Callback> callbacks = new Listeners<>(Lists.<Callback>newCopyOnWriteArrayList());
+    private final ManagedCollection<Callback> callbacks = new ManagedCollection<>(Lists.<Callback>newCopyOnWriteArrayList());
 
     private final MessageListener listener = new MessageListener() {
         @Override
@@ -60,7 +60,7 @@ public class Lighting2 {
             }
         }
     };
-    private final ListenerRegistration listenerRegistration;
+    private final MemberRegistration listenerRegistration;
 
     public static Lighting2 forAC(RFXtrx agent) {
         return new Lighting2(agent, com.rfxcom.rfxtrx.message.Lighting2.SubType.AC);
@@ -86,8 +86,8 @@ public class Lighting2 {
         super.finalize();
     }
 
-    public ListenerRegistration addCallback(Callback listener) {
-        return callbacks.addListener(listener);
+    public MemberRegistration addCallback(Callback listener) {
+        return callbacks.add(listener);
     }
 
     private void sendCommand(int houseId, byte unitCode, com.rfxcom.rfxtrx.message.Lighting2.Command command, byte level) throws IOException {

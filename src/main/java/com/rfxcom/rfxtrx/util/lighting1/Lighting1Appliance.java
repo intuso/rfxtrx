@@ -1,8 +1,8 @@
 package com.rfxcom.rfxtrx.util.lighting1;
 
 import com.google.common.collect.Lists;
-import com.intuso.utilities.listener.ListenerRegistration;
-import com.intuso.utilities.listener.Listeners;
+import com.intuso.utilities.listener.MemberRegistration;
+import com.intuso.utilities.listener.ManagedCollection;
 
 import java.io.IOException;
 
@@ -13,7 +13,7 @@ public class Lighting1Appliance {
 
     protected final Lighting1House lighting1House;
     protected final byte unitCode;
-    protected final Listeners<Callback> callbacks = new Listeners<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
+    protected final ManagedCollection<Callback> callbacks = new ManagedCollection<Callback>(Lists.<Callback>newCopyOnWriteArrayList());
 
     private final Lighting1House.Callback houseCallback = new Lighting1House.Callback() {
 
@@ -64,7 +64,7 @@ public class Lighting1Appliance {
             // appliances don't have levels
         }
     };
-    private final ListenerRegistration listenerRegistration;
+    private final MemberRegistration listenerRegistration;
 
     protected boolean on;
 
@@ -85,8 +85,8 @@ public class Lighting1Appliance {
         super.finalize();
     }
 
-    public ListenerRegistration addCallback(Callback listener) {
-        return callbacks.addListener(listener);
+    public MemberRegistration addCallback(Callback listener) {
+        return callbacks.add(listener);
     }
 
     public byte getUnitCode() {
