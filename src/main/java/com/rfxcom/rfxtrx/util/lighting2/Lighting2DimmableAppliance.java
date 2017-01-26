@@ -1,6 +1,6 @@
 package com.rfxcom.rfxtrx.util.lighting2;
 
-import com.intuso.utilities.listener.MemberRegistration;
+import com.intuso.utilities.listener.ManagedCollection;
 
 import java.io.IOException;
 
@@ -51,7 +51,7 @@ public class Lighting2DimmableAppliance extends Lighting2Appliance {
             }
         }
     };
-    private final MemberRegistration listenerRegistration;
+    private final ManagedCollection.Registration listenerRegistration;
 
     protected byte level;
 
@@ -67,7 +67,7 @@ public class Lighting2DimmableAppliance extends Lighting2Appliance {
 
     @Override
     protected void finalize() throws Throwable {
-        this.listenerRegistration.removeListener();
+        this.listenerRegistration.remove();
         super.finalize();
     }
 

@@ -1,7 +1,6 @@
 package com.rfxcom.rfxtrx.util.lighting1;
 
 import com.google.common.collect.Lists;
-import com.intuso.utilities.listener.MemberRegistration;
 import com.intuso.utilities.listener.ManagedCollection;
 
 import java.io.IOException;
@@ -73,7 +72,7 @@ public class Lighting1House {
             }
         }
     };
-    private final MemberRegistration listenerRegistration;
+    private final ManagedCollection.Registration listenerRegistration;
 
     public Lighting1House(Lighting1 lighting1, byte houseId) {
         this.lighting1 = lighting1;
@@ -83,11 +82,11 @@ public class Lighting1House {
 
     @Override
     protected void finalize() throws Throwable {
-        this.listenerRegistration.removeListener();
+        this.listenerRegistration.remove();
         super.finalize();
     }
 
-    public MemberRegistration addCallback(Callback listener) {
+    public ManagedCollection.Registration addCallback(Callback listener) {
         return callbacks.add(listener);
     }
 

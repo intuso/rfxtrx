@@ -1,7 +1,6 @@
 package com.rfxcom.rfxtrx.util.temperaturesensor;
 
 import com.google.common.collect.Lists;
-import com.intuso.utilities.listener.MemberRegistration;
 import com.intuso.utilities.listener.ManagedCollection;
 
 /**
@@ -23,7 +22,7 @@ public class TemperatureSensor {
             }
         }
     };
-    private final MemberRegistration listenerRegistration;
+    private final ManagedCollection.Registration listenerRegistration;
 
     public TemperatureSensor(TemperatureSensors sensors, int sensorId) {
         this.sensors = sensors;
@@ -33,11 +32,11 @@ public class TemperatureSensor {
 
     @Override
     protected void finalize() throws Throwable {
-        this.listenerRegistration.removeListener();
+        this.listenerRegistration.remove();
         super.finalize();
     }
 
-    public MemberRegistration addCallback(Callback listener) {
+    public ManagedCollection.Registration addCallback(Callback listener) {
         return callbacks.add(listener);
     }
 

@@ -3,7 +3,6 @@ package com.rfxcom.rfxtrx;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.intuso.utilities.listener.MemberRegistration;
 import com.intuso.utilities.listener.ManagedCollection;
 import com.rfxcom.rfxtrx.message.*;
 import jssc.*;
@@ -58,7 +57,7 @@ public class RFXtrx {
         this.patterns = patterns;
     }
 
-    public MemberRegistration addListener(MessageListener listener) {
+    public ManagedCollection.Registration addListener(MessageListener listener) {
         return listeners.add(listener);
     }
 
