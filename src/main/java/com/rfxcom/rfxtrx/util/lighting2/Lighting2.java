@@ -1,7 +1,7 @@
 package com.rfxcom.rfxtrx.util.lighting2;
 
 import com.google.common.collect.Lists;
-import com.intuso.utilities.listener.ManagedCollection;
+import com.intuso.utilities.collection.ManagedCollection;
 import com.rfxcom.rfxtrx.RFXtrx;
 import com.rfxcom.rfxtrx.message.MessageListener;
 import com.rfxcom.rfxtrx.message.MessageWrapper;

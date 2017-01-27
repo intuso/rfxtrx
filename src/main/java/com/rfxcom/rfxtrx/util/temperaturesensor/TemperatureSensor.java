@@ -1,7 +1,7 @@
 package com.rfxcom.rfxtrx.util.temperaturesensor;
 
 import com.google.common.collect.Lists;
-import com.intuso.utilities.listener.ManagedCollection;
+import com.intuso.utilities.collection.ManagedCollection;
 
 /**
  * Created by tomc on 04/11/14.

@@ -1,6 +1,6 @@
 package com.rfxcom.rfxtrx.util.lighting2;
 
-import com.intuso.utilities.listener.ManagedCollection;
+import com.intuso.utilities.collection.ManagedCollection;
 
 import java.io.IOException;
 

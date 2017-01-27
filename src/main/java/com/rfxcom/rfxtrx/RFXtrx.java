@@ -3,7 +3,7 @@ package com.rfxcom.rfxtrx;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.intuso.utilities.listener.ManagedCollection;
+import com.intuso.utilities.collection.ManagedCollection;
 import com.rfxcom.rfxtrx.message.*;
 import jssc.*;
 import org.slf4j.Logger;
