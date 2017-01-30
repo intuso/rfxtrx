@@ -38,6 +38,13 @@ public class RFXtrx {
 
     private SerialPort port;
 
+    public RFXtrx() {
+        this(Lists.newArrayList(
+                Pattern.compile(".*ttyUSB.*"),
+                Pattern.compile(".*COM.*")
+        ));
+    }
+
     public RFXtrx(List<Pattern> patterns) {
         this(LoggerFactory.getLogger(RFXtrx.class), patterns);
     }
