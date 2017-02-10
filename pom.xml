@@ -54,20 +54,7 @@
     </dependencies>
 
     <scm>
-        <connection>scm:svn:svn+ssh://tom@dev.intuso.com/svn/intuso.com/RFXtrx433JavaLib/trunk</connection>
-        <developerConnection>scm:svn:svn+ssh://tom@dev.intuso.com/svn/intuso.com/RFXtrx433JavaLib/trunk</developerConnection>
+        <connection>git@github.com:intuso/rfxtrx.git</connection>
+        <developerConnection>git@github.com:intuso/rfxtrx.git</developerConnection>
     </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>dev.intuso.com</id>
-            <name>libs-releases</name>
-            <url>http://dev.intuso.com/maven/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>dev.intuso.com-snapshots</id>
-            <name>libs-snapshots</name>
-            <url>http://dev.intuso.com/maven/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>
