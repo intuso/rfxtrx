@@ -55,8 +55,19 @@
 
     </dependencies>
 
+    <build>
+        <plugins>
+            <!-- Attach javadoc -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
     <scm>
         <connection>git@github.com:intuso/rfxtrx.git</connection>
         <developerConnection>git@github.com:intuso/rfxtrx.git</developerConnection>
     </scm>
+
 </project>
