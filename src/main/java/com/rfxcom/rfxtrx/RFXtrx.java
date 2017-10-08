@@ -84,7 +84,7 @@ public class RFXtrx {
                     }
                 }
             } else
-                throw new IOException("No ports match the pattern " + pattern);
+                logger.error("No ports match the pattern " + pattern);
         }
         if(port == null)
             throw new IOException("No ports available");
